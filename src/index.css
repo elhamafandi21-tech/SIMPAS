@@ -53,7 +53,8 @@
 }
 
 [data-theme="dark"] .text-dark,
-[data-theme="dark"] .text-black {
+[data-theme="dark"] .text-black,
+[data-theme="dark"] strong {
   color: var(--text-heading) !important;
 }
 
@@ -67,6 +68,69 @@
 
 [data-theme="dark"] .text-black-50 {
   color: rgba(248, 250, 252, 0.5) !important;
+}
+
+[data-theme="dark"] label,
+[data-theme="dark"] .form-label,
+[data-theme="dark"] .form-check-label {
+  color: var(--text-heading) !important;
+}
+
+/* SweetAlert2 Elegant Theme Integration */
+.swal2-popup {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  border-radius: 1rem !important;
+}
+[data-theme="dark"] .swal2-popup {
+  background-color: var(--bg-card) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+}
+[data-theme="dark"] .swal2-title {
+  color: var(--text-heading) !important;
+}
+[data-theme="dark"] .swal2-html-container {
+  color: var(--text-primary) !important;
+}
+[data-theme="dark"] .swal2-input,
+[data-theme="dark"] .swal2-select,
+[data-theme="dark"] .swal2-textarea {
+  background-color: #0f172a !important;
+  color: var(--text-heading) !important;
+  border: 1.5px solid var(--border-color) !important;
+}
+[data-theme="dark"] .swal2-input:focus,
+[data-theme="dark"] .swal2-select:focus,
+[data-theme="dark"] .swal2-textarea:focus {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 4px var(--primary-light) !important;
+}
+[data-theme="dark"] .swal2-validation-message {
+  background-color: #1e293b !important;
+  color: #fca5a5 !important;
+}
+
+/* bg-label overrides for Dark Mode */
+[data-theme="dark"] .bg-label-primary {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+[data-theme="dark"] .bg-label-success {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  color: #34d399 !important;
+}
+[data-theme="dark"] .bg-label-info {
+  background-color: rgba(6, 182, 212, 0.15) !important;
+  color: #22d3ee !important;
+}
+[data-theme="dark"] .bg-label-warning {
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  color: #fbbf24 !important;
+}
+[data-theme="dark"] .bg-label-danger {
+  background-color: rgba(239, 68, 68, 0.15) !important;
+  color: #fca5a5 !important;
 }
 
 [data-theme="dark"] .modal-content {
@@ -541,4 +605,56 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
   display: inline-flex;
   align-items: center;
 }
+
+/* Comprehensive Mobile & Tablet Responsive Enhancements */
+@media (max-width: 768px) {
+  .layout-content {
+    padding: 1rem 0.75rem !important;
+  }
+  
+  .card-body {
+    padding: 1rem !important;
+  }
+  
+  .card-header {
+    padding: 1rem !important;
+  }
+
+  /* Make sure statistical grids have compact row gaps and perfect padding */
+  .row.g-4 {
+    --bs-gutter-x: 0.75rem !important;
+    --bs-gutter-y: 0.75rem !important;
+  }
+
+  /* Improve typography sizing for mobile screens */
+  h1, .h1 { font-size: 1.5rem !important; }
+  h2, .h2 { font-size: 1.35rem !important; }
+  h3, .h3 { font-size: 1.2rem !important; }
+  h4, .h4 { font-size: 1.1rem !important; }
+  
+  /* Buttons should look tight and snug on mobile */
+  .btn {
+    padding: 0.45rem 0.85rem !important;
+    font-size: 0.825rem !important;
+  }
+
+  /* SweetsAlert sizing inside small screen viewport */
+  .swal2-popup {
+    padding: 1.25rem !important;
+    font-size: 0.85rem !important;
+    width: 90% !important;
+  }
+}
+
+/* Scrollable tables inside cards on small mobile screens */
+.table-responsive {
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-card);
+  margin-bottom: 1rem;
+}
+[data-theme="dark"] .table-responsive {
+  border-color: var(--border-color);
+}
+
 

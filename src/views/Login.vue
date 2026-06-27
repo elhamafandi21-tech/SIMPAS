@@ -5,12 +5,10 @@
         <!-- Logo Header -->
         <div class="text-center mb-4">
           <div class="d-flex align-items-center justify-content-center mb-2">
-            <span class="app-logo-box bg-primary text-white d-flex align-items-center justify-content-center me-2">
-              <span class="fw-bold fs-4">S</span>
-            </span>
-            <span class="fs-4 fw-bold text-heading text-primary">SIMPAS</span>
+            <img src="/app_icon.jpg" class="rounded border shadow-sm me-2" style="width: 44px; height: 44px; object-fit: cover;" alt="Logo" />
+            <span class="fs-3 fw-bold text-heading text-primary">SIMPAS</span>
           </div>
-          <p class="text-muted small">Sistem Pendataan MADIN Pancasila Salatiga</p>
+          <p class="text-muted small mb-1">Sistem Pendataan MADIN Pancasila Salatiga</p>
           <div class="badge bg-label-primary badge-custom mt-1 fs-7">Real-time Supabase Engine</div>
         </div>
 

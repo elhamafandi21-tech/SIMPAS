@@ -10,11 +10,9 @@
       id="layout-sidebar"
     >
       <!-- Brand Logo Header -->
-      <div class="d-flex align-items-center justify-content-between p-4 border-bottom">
+      <div class="d-flex align-items-center justify-content-between p-3 border-bottom">
         <router-link to="/" class="d-flex align-items-center text-decoration-none">
-          <div class="brand-box bg-primary text-white d-flex align-items-center justify-content-center me-2">
-            <span class="fw-bold">S</span>
-          </div>
+          <img src="/app_icon.jpg" class="rounded me-2 border shadow-xs" style="width: 36px; height: 36px; object-fit: cover;" alt="Logo" />
           <div>
             <span class="fs-5 fw-bold text-heading text-primary block m-0 p-0">SIMPAS</span>
             <span class="text-xs text-muted d-block" style="font-size: 0.65rem; margin-top: -3px;">MADIN PANCASILA</span>
@@ -213,9 +211,15 @@
         <div class="w-full d-flex align-items-center justify-content-between">
           <!-- Left trigger for Mobile -->
           <div class="d-flex align-items-center">
-            <button class="btn btn-sm d-lg-none me-3 border-0 text-muted" @click="toggleMobileSidebar">
+            <button class="btn btn-sm d-lg-none me-2 border-0 text-muted" @click="toggleMobileSidebar">
               <MenuIcon :size="24" />
             </button>
+            <!-- Mobile Only Brand Header -->
+            <div class="d-flex d-md-none align-items-center gap-2 me-3">
+              <img src="/app_icon.jpg" class="rounded border" style="width: 28px; height: 28px; object-fit: cover;" alt="Logo" />
+              <span class="fw-bold text-primary" style="font-size: 0.95rem; letter-spacing: 0.05em;">SIMPAS</span>
+            </div>
+            <!-- Desktop Brand Header -->
             <div class="d-none d-md-flex align-items-center gap-1">
               <span class="fw-semibold text-heading text-primary">MADIN PANCASILA SALATIGA</span>
               <span class="text-muted text-sm px-2">|</span>
