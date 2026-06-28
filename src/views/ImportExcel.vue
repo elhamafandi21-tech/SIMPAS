@@ -542,19 +542,31 @@ const normalizeKeys = (row: any): any => {
     const k = key.toLowerCase().trim().replace(/[\s_]/g, '');
     const val = row[key];
     
-    if (['nis', 'noinduk', 'nomorinduk'].includes(k)) norm.nis = val;
-    else if (['nama', 'namalengkap', 'namasantri', 'namaguru', 'namakitab', 'kitab', 'mapel', 'subject'].includes(k)) norm.nama = val;
-    else if (['gender', 'jeniskelamin', 'jk', 'sex'].includes(k)) norm.gender = val;
-    else if (['kelas', 'rombel', 'ruang', 'class', 'classroom'].includes(k)) norm.kelas = val;
-    else if (['tempatlahir', 'kota', 'lahirdi'].includes(k)) norm.tempat_lahir = val;
-    else if (['tanggallahir', 'tgllahir', 'lahir', 'birthday', 'dob'].includes(k)) norm.tanggal_lahir = val;
-    else if (['hportu', 'hp', 'telepon', 'telpon', 'no_hp', 'nohp', 'phone', 'contact', 'kontak'].includes(k)) norm.hp_ortu = val;
-    else if (['alamat', 'rumah', 'address'].includes(k)) norm.alamat = val;
-    else if (['username', 'user', 'nama_pengguna', 'namapengguna'].includes(k)) norm.username = val;
-    else if (['email', 'surel'].includes(k)) norm.email = val;
-    else if (['password', 'sandi', 'katasandi'].includes(k)) norm.password = val;
-    else if (['kode', 'kode_kitab', 'kodekitab', 'id', 'code'].includes(k)) norm.kode = val;
-    else {
+    if (k.includes('nis') || k.includes('noinduk') || k.includes('nomorinduk')) {
+      norm.nis = val;
+    } else if (k === 'nama' || k.includes('namalengkap') || k.includes('namasantri') || k.includes('namaguru') || k.includes('namakitab') || k.includes('kitab') || k.includes('mapel') || k.includes('subject') || k.includes('rujukan')) {
+      norm.nama = val;
+    } else if (k.includes('gender') || k.includes('jeniskelamin') || k === 'jk' || k.includes('sex')) {
+      norm.gender = val;
+    } else if (k.includes('kelas') || k.includes('rombel') || k.includes('ruang') || k.includes('class')) {
+      norm.kelas = val;
+    } else if (k.includes('tempatlahir') || k.includes('kota') || k.includes('lahirdi')) {
+      norm.tempat_lahir = val;
+    } else if (k.includes('tanggallahir') || k.includes('tgllahir') || k === 'lahir' || k.includes('birthday') || k.includes('dob')) {
+      norm.tanggal_lahir = val;
+    } else if (k.includes('hportu') || k.includes('nohp') || k === 'hp' || k.includes('telepon') || k.includes('telpon') || k.includes('phone') || k.includes('contact') || k.includes('kontak')) {
+      norm.hp_ortu = val;
+    } else if (k.includes('alamat') || k.includes('rumah') || k.includes('address')) {
+      norm.alamat = val;
+    } else if (k.includes('username') || k.includes('user') || k.includes('pengguna') || k.includes('login')) {
+      norm.username = val;
+    } else if (k.includes('email') || k.includes('surel')) {
+      norm.email = val;
+    } else if (k.includes('password') || k.includes('sandi')) {
+      norm.password = val;
+    } else if (k.includes('kode') || k.includes('code') || k === 'id') {
+      norm.kode = val;
+    } else {
       // fallback as-is
       norm[k] = val;
     }
@@ -571,9 +583,29 @@ const parseExcelDate = (val: any): string => {
     return date.toISOString().split('T')[0];
   }
   const str = String(val).trim();
+  
   // check if matches yyyy-mm-dd
   if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  if (/^\d{4}\/\d{2}\/\d{2}$/.test(str)) return str.replace(/\//g, '-');
   
+  // check if matches dd/mm/yyyy or dd-mm-yyyy or dd.mm.yyyy
+  const dmyMatch = str.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{4})$/);
+  if (dmyMatch) {
+    const day = dmyMatch[1].padStart(2, '0');
+    const month = dmyMatch[2].padStart(2, '0');
+    const year = dmyMatch[3];
+    return `${year}-${month}-${day}`;
+  }
+  
+  // check if matches yyyy/mm/dd or yyyy-mm-dd (short month/day)
+  const ymdMatch = str.match(/^(\d{4})[\/\-\.](\d{1,2})[\/\-\.](\d{1,2})$/);
+  if (ymdMatch) {
+    const year = ymdMatch[1];
+    const month = ymdMatch[2].padStart(2, '0');
+    const day = ymdMatch[3].padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
   // try standard js parsing
   try {
     const parsed = new Date(str);
