@@ -23,10 +23,10 @@
       <div class="row g-3 align-items-end">
         <!-- Search bar -->
         <div class="col-12 col-md-6">
-          <label class="form-label small fw-semibold">Cari Nama / NIS Santri</label>
+          <label class="form-label small fw-semibold">Cari Nama / No. Urut Santri</label>
           <div class="input-group">
             <span class="input-group-text bg-light border-end-0"><SearchIcon :size="16" class="text-muted" /></span>
-            <input v-model="searchQuery" type="text" class="form-control border-start-0" placeholder="Ketik nama lengkap atau NIS santri..." />
+            <input v-model="searchQuery" type="text" class="form-control border-start-0" placeholder="Ketik nama lengkap atau nomor urut santri..." />
           </div>
         </div>
 
@@ -66,13 +66,10 @@
               <th style="width: 45px" class="text-center">
                 <input type="checkbox" class="form-check-input cursor-pointer" v-model="isAllSelected" />
               </th>
-              <th style="width: 60px">No</th>
-              <th style="width: 100px">NIS</th>
+              <th style="width: 180px">Nomor Urut Santri (No.)</th>
               <th>Nama Lengkap</th>
               <th>Kelas</th>
               <th>L/P</th>
-              <th>Kontak Orang Tua</th>
-              <th>Alamat</th>
               <th class="text-end" style="width: 150px">Aksi</th>
             </tr>
           </thead>
@@ -81,11 +78,9 @@
               <td class="text-center">
                 <input type="checkbox" class="form-check-input cursor-pointer" :value="std.id" v-model="selectedStudentIds" />
               </td>
-              <td>{{ idx + 1 }}</td>
               <td class="fw-bold text-xs text-primary">{{ std.nis }}</td>
               <td>
                 <div class="fw-bold text-heading">{{ std.nama }}</div>
-                <span class="text-xs text-muted d-block">{{ std.tempat_lahir }}, {{ formatDate(std.tanggal_lahir) }}</span>
               </td>
               <td>
                 <span class="badge bg-label-info badge-custom text-xs">
@@ -96,10 +91,6 @@
                 <span class="badge" :class="std.gender === 'Laki-laki' ? 'bg-primary text-white' : 'bg-danger text-white'" style="font-size: 0.65rem">
                   {{ std.gender === 'Laki-laki' ? 'L' : 'P' }}
                 </span>
-              </td>
-              <td class="text-xs text-heading">{{ std.hp_ortu }}</td>
-              <td class="text-xs text-muted text-truncate" style="max-width: 180px" :title="std.alamat">
-                {{ std.alamat }}
               </td>
               <td class="text-end">
                 <div class="d-flex justify-content-end gap-1">
@@ -113,7 +104,7 @@
               </td>
             </tr>
             <tr v-if="filteredStudents.length === 0">
-              <td colspan="9" class="text-center py-4 text-muted">Tidak ada data santri yang cocok.</td>
+              <td colspan="6" class="text-center py-4 text-muted">Tidak ada data santri yang cocok.</td>
             </tr>
           </tbody>
         </table>
@@ -134,8 +125,8 @@
                 <div class="row g-3">
                   <!-- NIS -->
                   <div class="col-6">
-                    <label class="form-label small fw-semibold">Nomor Induk Santri (NIS)</label>
-                    <input v-model="form.nis" type="text" class="form-control" placeholder="Contoh: 25009" required />
+                    <label class="form-label small fw-semibold">Nomor Urut Santri (No.)</label>
+                    <input v-model="form.nis" type="text" class="form-control" placeholder="Contoh: 1" required />
                   </div>
                   <!-- Kelas -->
                   <div class="col-6">
@@ -156,32 +147,12 @@
                     <input v-model="form.nama" type="text" class="form-control" placeholder="Masukkan nama lengkap..." required />
                   </div>
                   <!-- Gender -->
-                  <div class="col-6">
+                  <div class="col-12">
                     <label class="form-label small fw-semibold">Jenis Kelamin</label>
                     <select v-model="form.gender" class="form-select" required>
                       <option value="Laki-laki">Laki-laki</option>
                       <option value="Perempuan">Perempuan</option>
                     </select>
-                  </div>
-                  <!-- HP Orang Tua -->
-                  <div class="col-6">
-                    <label class="form-label small fw-semibold">No HP Orang Tua</label>
-                    <input v-model="form.hp_ortu" type="text" class="form-control" placeholder="Contoh: 0812..." required />
-                  </div>
-                  <!-- Tempat Lahir -->
-                  <div class="col-6">
-                    <label class="form-label small fw-semibold">Tempat Lahir</label>
-                    <input v-model="form.tempat_lahir" type="text" class="form-control" placeholder="Contoh: Salatiga" required />
-                  </div>
-                  <!-- Tanggal Lahir -->
-                  <div class="col-6">
-                    <label class="form-label small fw-semibold">Tanggal Lahir</label>
-                    <input v-model="form.tanggal_lahir" type="date" class="form-control" required />
-                  </div>
-                  <!-- Alamat -->
-                  <div class="col-12">
-                    <label class="form-label small fw-semibold">Alamat Lengkap</label>
-                    <textarea v-model="form.alamat" class="form-control" rows="2" placeholder="Tulis alamat rumah lengkap..." required></textarea>
                   </div>
                 </div>
 
@@ -207,7 +178,7 @@
             </div>
             <div class="modal-body p-4">
               <p class="text-muted text-xs mb-3">
-                Masukkan daftar nama santri baru secara sekaligus. Sistem akan membuat NIS berurutan secara otomatis berdasarkan nomor awal yang Anda tentukan.
+                Masukkan daftar nama santri baru secara sekaligus. Sistem akan membuat Nomor Urut berurutan secara otomatis berdasarkan nomor awal yang Anda tentukan.
               </p>
               <div class="row g-3">
                 <div class="col-md-6">
@@ -220,27 +191,20 @@
                   </select>
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label small fw-semibold">Mulai NIS dari Nomor</label>
-                  <input v-model="bulkForm.startNis" type="number" class="form-control" placeholder="Contoh: 25001" required />
+                  <label class="form-label small fw-semibold">Mulai Nomor Urut dari Nomor</label>
+                  <input v-model="bulkForm.startNis" type="number" class="form-control" placeholder="Contoh: 1" required />
                 </div>
                 <div class="col-12">
                   <label class="form-label small fw-semibold">Daftar Nama Santri (Satu Nama per Baris)</label>
                   <textarea v-model="bulkForm.namesText" class="form-control text-xs" rows="8" placeholder="Contoh:&#10;Ahmad Dahlan&#10;Siti Aisyah&#10;Muhammad Wildan&#10;Fatimah Az-Zahra" required></textarea>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12">
                   <label class="form-label small fw-semibold">Default Jenis Kelamin</label>
                   <select v-model="bulkForm.defaultGender" class="form-select">
                     <option value="Laki-laki">Laki-laki</option>
                     <option value="Perempuan">Perempuan</option>
                     <option value="auto">Deteksi Otomatis (Siti, Fatimah, Zahra, Aminah, dkk -> Perempuan)</option>
                   </select>
-                </div>
-                <div class="col-md-6">
-                  <label class="form-label small fw-semibold">Default Kota Lahir & HP</label>
-                  <div class="input-group">
-                    <input v-model="bulkForm.defaultTempatLahir" type="text" class="form-control" placeholder="Tempat Lahir (Salatiga)" />
-                    <input v-model="bulkForm.defaultHp" type="text" class="form-control" placeholder="No HP Ortu (0812...)" />
-                  </div>
                 </div>
               </div>
               <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
@@ -379,10 +343,10 @@ const form = ref({
   nis: '',
   nama: '',
   gender: 'Laki-laki' as 'Laki-laki' | 'Perempuan',
-  tempat_lahir: '',
-  tanggal_lahir: '',
-  alamat: '',
-  hp_ortu: '',
+  tempat_lahir: 'Salatiga',
+  tanggal_lahir: '2014-01-01',
+  alamat: 'Salatiga',
+  hp_ortu: '-',
   kelas_id: ''
 });
 
@@ -393,10 +357,10 @@ const openAddModal = () => {
     nis: '',
     nama: '',
     gender: 'Laki-laki',
-    tempat_lahir: '',
-    tanggal_lahir: '',
-    alamat: '',
-    hp_ortu: '',
+    tempat_lahir: 'Salatiga',
+    tanggal_lahir: '2014-01-01',
+    alamat: 'Salatiga',
+    hp_ortu: '-',
     kelas_id: ''
   };
   showModal.value = true;

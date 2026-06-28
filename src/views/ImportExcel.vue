@@ -205,15 +205,6 @@
                           </option>
                         </select>
                       </td>
-                      <td>
-                        <input v-model="row.tempat_lahir" type="text" class="form-control form-control-sm text-xs py-0" />
-                      </td>
-                      <td>
-                        <input v-model="row.tanggal_lahir" type="date" class="form-control form-control-sm text-xs py-0" />
-                      </td>
-                      <td>
-                        <input v-model="row.hp_ortu" type="text" class="form-control form-control-sm text-xs py-0" />
-                      </td>
                     </template>
 
                     <template v-if="activeTab === 'ustadz'">
@@ -222,15 +213,6 @@
                       </td>
                       <td>
                         <input v-model="row.username" type="text" class="form-control form-control-sm text-xs py-0" placeholder="Username login" />
-                      </td>
-                      <td>
-                        <input v-model="row.email" type="email" class="form-control form-control-sm text-xs py-0" />
-                      </td>
-                      <td>
-                        <input v-model="row.hp" type="text" class="form-control form-control-sm text-xs py-0" />
-                      </td>
-                      <td>
-                        <input v-model="row.password" type="text" class="form-control form-control-sm text-xs py-0" placeholder="Sandi default" />
                       </td>
                     </template>
 
@@ -279,7 +261,7 @@
             <div class="col-md-4 border-end-md">
               <span class="badge bg-label-primary mb-2">Impor Santri</span>
               <ul class="ps-3 mb-0">
-                <li class="mb-1"><strong class="text-dark">NIS</strong>: Pastikan unik (angka, misal: 25001).</li>
+                <li class="mb-1"><strong class="text-dark">Nomor Urut Santri (No.)</strong>: Urutan santri (misal: 1, 2, 3).</li>
                 <li class="mb-1"><strong class="text-dark">Nama</strong>: Nama lengkap santri.</li>
                 <li class="mb-1"><strong class="text-dark">Gender</strong>: Laki-laki atau Perempuan.</li>
                 <li class="mb-1"><strong class="text-dark">Kelas</strong>: Dapat diisi nama kelas (misal: "Kelas 1-A") atau ID kelas.</li>
@@ -290,8 +272,6 @@
               <ul class="ps-3 mb-0">
                 <li class="mb-1"><strong class="text-dark">Nama</strong>: Nama guru (contoh: Ustadz Zain).</li>
                 <li class="mb-1"><strong class="text-dark">Username</strong>: Unik untuk login akun ustadz.</li>
-                <li class="mb-1"><strong class="text-dark">Sandi</strong>: Kata sandi awal (default: "password").</li>
-                <li class="mb-1"><strong class="text-dark">HP</strong>: Nomor HP aktif untuk kontak WA.</li>
               </ul>
             </div>
             <div class="col-md-4">
@@ -353,21 +333,15 @@ const tabBadgeClass = computed(() => {
 const previewColumns = computed(() => {
   if (activeTab.value === 'siswa') {
     return [
-      { key: 'nis', label: 'NIS *' },
+      { key: 'nis', label: 'Nomor Urut Santri (No.) *' },
       { key: 'nama', label: 'Nama Lengkap *' },
       { key: 'gender', label: 'Gender' },
-      { key: 'kelas_id', label: 'Kelas' },
-      { key: 'tempat_lahir', label: 'Tempat Lahir' },
-      { key: 'tanggal_lahir', label: 'Tanggal Lahir' },
-      { key: 'hp_ortu', label: 'HP Orang Tua' }
+      { key: 'kelas_id', label: 'Kelas' }
     ];
   } else if (activeTab.value === 'ustadz') {
     return [
       { key: 'nama', label: 'Nama Lengkap *' },
-      { key: 'username', label: 'Username Login *' },
-      { key: 'email', label: 'Email' },
-      { key: 'hp', label: 'No HP / Kontak' },
-      { key: 'password', label: 'Kata Sandi' }
+      { key: 'username', label: 'Username Login *' }
     ];
   } else {
     return [
@@ -544,7 +518,7 @@ const normalizeKeys = (row: any): any => {
     
     if (k.includes('kode') || k.includes('code') || k === 'id') {
       norm.kode = val;
-    } else if (k.includes('nis') || k.includes('noinduk') || k.includes('nomorinduk')) {
+    } else if (k.includes('nis') || k.includes('noinduk') || k.includes('nomorinduk') || k.includes('nomorurutsantri') || k.includes('nomorurut') || k.includes('nourut') || k === 'no' || k === 'no.') {
       norm.nis = val;
     } else if (k === 'nama' || k.includes('namalengkap') || k.includes('namasantri') || k.includes('namaguru') || k.includes('namakitab') || k.includes('kitab') || k.includes('mapel') || k.includes('subject') || k.includes('rujukan')) {
       norm.nama = val;
@@ -568,7 +542,7 @@ const normalizeKeys = (row: any): any => {
       norm.password = val;
     } else {
       // fallback as-is
-      norm[k] = val;
+      norm[key] = val;
     }
   }
   return norm;
@@ -730,17 +704,17 @@ const downloadTemplate = (type: 'siswa' | 'ustadz' | 'kitab') => {
   let fileName = '';
 
   if (type === 'siswa') {
-    headers = ['NIS', 'Nama Lengkap', 'Gender', 'Kelas', 'Tempat Lahir', 'Tanggal Lahir', 'HP Orang Tua', 'Alamat'];
+    headers = ['Nomor Urut Santri (No.)', 'Nama Lengkap', 'Gender', 'Kelas'];
     samples = [
-      { 'NIS': '25010', 'Nama Lengkap': 'M. Wildan Al-Farabi', 'Gender': 'Laki-laki', 'Kelas': 'Kelas 1-A', 'Tempat Lahir': 'Salatiga', 'Tanggal Lahir': '2014-06-15', 'HP Orang Tua': '081234567890', 'Alamat': 'Tingkir Tengah, Salatiga' },
-      { 'NIS': '25011', 'Nama Lengkap': 'Lailatul Fitriyyah', 'Gender': 'Perempuan', 'Kelas': 'Kelas 2-A', 'Tempat Lahir': 'Semarang', 'Tanggal Lahir': '2013-11-20', 'HP Orang Tua': '089876543210', 'Alamat': 'Ledok, Salatiga' }
+      { 'Nomor Urut Santri (No.)': '1', 'Nama Lengkap': 'M. Wildan Al-Farabi', 'Gender': 'Laki-laki', 'Kelas': 'Kelas 1-A' },
+      { 'Nomor Urut Santri (No.)': '2', 'Nama Lengkap': 'Lailatul Fitriyyah', 'Gender': 'Perempuan', 'Kelas': 'Kelas 2-A' }
     ];
     fileName = 'Template_Santri_SIMPAS.xlsx';
   } else if (type === 'ustadz') {
-    headers = ['Nama Lengkap', 'Username Login', 'Email', 'No HP', 'Kata Sandi'];
+    headers = ['Nama Lengkap', 'Username Login'];
     samples = [
-      { 'Nama Lengkap': 'Ustadz Zainal Abidin, S.Ag', 'Username Login': 'zainal_abidin', 'Email': 'zainal@simpas.com', 'No HP': '085641222333', 'Kata Sandi': 'password123' },
-      { 'Nama Lengkap': 'Ustadzah Lailiyatur Rohmah', 'Username Login': 'lailiya_rohmah', 'Email': 'lailiya@simpas.com', 'No HP': '087812000111', 'Kata Sandi': 'password123' }
+      { 'Nama Lengkap': 'Ustadz Zainal Abidin, S.Ag', 'Username Login': 'zainal_abidin' },
+      { 'Nama Lengkap': 'Ustadzah Lailiyatur Rohmah', 'Username Login': 'lailiya_rohmah' }
     ];
     fileName = 'Template_Ustadz_SIMPAS.xlsx';
   } else {

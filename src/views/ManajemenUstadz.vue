@@ -23,7 +23,7 @@
               <span class="input-group-text bg-light border-end-0 text-muted">
                 <SearchIcon :size="16" />
               </span>
-              <input v-model="searchQuery" type="text" class="form-control bg-light border-start-0" placeholder="Cari berdasarkan nama, username, email, atau nomor HP..." />
+              <input v-model="searchQuery" type="text" class="form-control bg-light border-start-0" placeholder="Cari berdasarkan nama atau username..." />
             </div>
           </div>
           <div class="col-12 col-md-4">
@@ -62,22 +62,6 @@
             <p class="text-xs text-primary mb-3">@{{ prof.username || 'username_belum_set' }}</p>
 
             <hr class="my-3 opacity-50" />
-
-            <!-- Details list -->
-            <div class="text-start space-y-2 mb-4">
-              <div class="d-flex align-items-center gap-2 text-sm text-secondary">
-                <MailIcon :size="14" class="text-muted flex-shrink-0" />
-                <span class="text-truncate" :title="prof.email">{{ prof.email }}</span>
-              </div>
-              <div class="d-flex align-items-center gap-2 text-sm text-secondary">
-                <PhoneIcon :size="14" class="text-muted flex-shrink-0" />
-                <span>{{ prof.hp || prof.telpon || '-' }}</span>
-              </div>
-              <div class="d-flex align-items-center gap-2 text-sm text-secondary">
-                <KeyIcon :size="14" class="text-muted flex-shrink-0" />
-                <span class="text-xs">Sandi: <code class="text-danger">{{ prof.password || '******' }}</code></span>
-              </div>
-            </div>
 
             <!-- Action Buttons -->
             <div class="d-flex gap-2 justify-content-center">
@@ -129,27 +113,6 @@
                     <label class="form-label small fw-semibold">Username Login</label>
                     <input v-model="form.username" type="text" class="form-control" placeholder="Contoh: ustadzsyakir" required @input="cleanUsername" />
                   </div>
-                  <!-- Password -->
-                  <div class="col-12 col-sm-6 mb-3">
-                    <label class="form-label small fw-semibold">Kata Sandi (Password)</label>
-                    <input v-model="form.password" type="text" class="form-control" placeholder="Isikan sandi login" required />
-                  </div>
-                </div>
-
-                <div class="row">
-                  <!-- Email -->
-                  <div class="col-12 col-sm-6 mb-3">
-                    <label class="form-label small fw-semibold">Alamat Email</label>
-                    <input v-model="form.email" type="email" class="form-control" placeholder="Contoh: syakir@simpas.com" required />
-                  </div>
-                  <!-- No HP -->
-                  <div class="col-12 col-sm-6 mb-3">
-                    <label class="form-label small fw-semibold">No. HP (WhatsApp)</label>
-                    <input v-model="form.hp" type="text" class="form-control" placeholder="Contoh: 0812345678" required />
-                  </div>
-                </div>
-
-                <div class="row">
                   <!-- Role -->
                   <div class="col-12 col-sm-6 mb-3">
                     <label class="form-label small fw-semibold">Peran Akses (Role)</label>
@@ -157,11 +120,6 @@
                       <option value="Ustadz">Ustadz / Pengajar</option>
                       <option value="Admin">Admin / Kepala Sekolah</option>
                     </select>
-                  </div>
-                  <!-- Telpon Alternatif -->
-                  <div class="col-12 col-sm-6 mb-3">
-                    <label class="form-label small fw-semibold">Telepon Alternatif (Opsional)</label>
-                    <input v-model="form.telpon" type="text" class="form-control" placeholder="Contoh: 0298-323xxx" />
                   </div>
                 </div>
 
@@ -226,9 +184,6 @@ import {
   Edit as EditIcon,
   Trash as TrashIcon,
   Search as SearchIcon,
-  Mail as MailIcon,
-  Phone as PhoneIcon,
-  Key as KeyIcon,
   Users as UsersIcon,
   Check as CheckIcon,
   User as UserIcon,
@@ -254,8 +209,8 @@ const form = ref({
   nama: '',
   username: '',
   password: 'password123',
-  email: '',
-  hp: '',
+  email: '-',
+  hp: '-',
   telpon: '',
   role: 'Ustadz' as 'Ustadz' | 'Admin',
   profile_picture_url: ''
@@ -271,10 +226,8 @@ const filteredProfiles = computed(() => {
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase().trim();
       const nameMatch = prof.nama.toLowerCase().includes(q);
-      const emailMatch = prof.email.toLowerCase().includes(q);
       const userMatch = (prof.username || '').toLowerCase().includes(q);
-      const hpMatch = (prof.hp || '').toLowerCase().includes(q) || (prof.telpon || '').toLowerCase().includes(q);
-      return nameMatch || emailMatch || userMatch || hpMatch;
+      return nameMatch || userMatch;
     }
     return true;
   });
@@ -353,8 +306,8 @@ const openAddModal = () => {
     nama: '',
     username: '',
     password: 'password123',
-    email: '',
-    hp: '',
+    email: '-',
+    hp: '-',
     telpon: '',
     role: 'Ustadz',
     profile_picture_url: ''
@@ -369,8 +322,8 @@ const openEditModal = (prof: Profile) => {
     nama: prof.nama,
     username: prof.username || '',
     password: prof.password || 'password123',
-    email: prof.email,
-    hp: prof.hp || '',
+    email: prof.email || '-',
+    hp: prof.hp || '-',
     telpon: prof.telpon || '',
     role: prof.role,
     profile_picture_url: prof.profile_picture_url || ''
