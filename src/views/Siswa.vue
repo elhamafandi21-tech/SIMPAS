@@ -50,14 +50,22 @@
 
     <!-- Student Table Card -->
     <div class="card shadow-sm border-0 overflow-hidden">
-      <div class="card-header d-flex justify-content-between align-items-center">
+      <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h5 class="mb-0">Daftar Santri Aktif</h5>
-        <span class="badge bg-label-primary badge-custom">{{ filteredStudents.length }} Santri Terfilter</span>
+        <div class="d-flex align-items-center gap-2">
+          <button v-if="selectedStudentIds.length > 0" @click="deleteSelectedStudents" class="btn btn-sm btn-danger d-flex align-items-center gap-2 px-3">
+            <TrashIcon :size="14" /> Hapus Terpilih ({{ selectedStudentIds.length }})
+          </button>
+          <span class="badge bg-label-primary badge-custom">{{ filteredStudents.length }} Santri Terfilter</span>
+        </div>
       </div>
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead>
             <tr>
+              <th style="width: 45px" class="text-center">
+                <input type="checkbox" class="form-check-input cursor-pointer" v-model="isAllSelected" />
+              </th>
               <th style="width: 60px">No</th>
               <th style="width: 100px">NIS</th>
               <th>Nama Lengkap</th>
@@ -69,7 +77,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(std, idx) in filteredStudents" :key="std.id">
+            <tr v-for="(std, idx) in filteredStudents" :key="std.id" :class="{ 'bg-success-subtle': selectedStudentIds.includes(std.id) }">
+              <td class="text-center">
+                <input type="checkbox" class="form-check-input cursor-pointer" :value="std.id" v-model="selectedStudentIds" />
+              </td>
               <td>{{ idx + 1 }}</td>
               <td class="fw-bold text-xs text-primary">{{ std.nis }}</td>
               <td>
@@ -102,7 +113,7 @@
               </td>
             </tr>
             <tr v-if="filteredStudents.length === 0">
-              <td colspan="8" class="text-center py-4 text-muted">Tidak ada data santri yang cocok.</td>
+              <td colspan="9" class="text-center py-4 text-muted">Tidak ada data santri yang cocok.</td>
             </tr>
           </tbody>
         </table>
@@ -291,6 +302,26 @@ const showModal = ref(false);
 const isEditMode = ref(false);
 const editId = ref('');
 
+// Bulk selection states
+const selectedStudentIds = ref<string[]>([]);
+
+const isAllSelected = computed({
+  get: () => {
+    if (filteredStudents.value.length === 0) return false;
+    return filteredStudents.value.every(std => selectedStudentIds.value.includes(std.id));
+  },
+  set: (val) => {
+    if (val) {
+      const currentIds = new Set(selectedStudentIds.value);
+      filteredStudents.value.forEach(std => currentIds.add(std.id));
+      selectedStudentIds.value = Array.from(currentIds);
+    } else {
+      const currentFilteredIds = filteredStudents.value.map(std => std.id);
+      selectedStudentIds.value = selectedStudentIds.value.filter(id => !currentFilteredIds.includes(id));
+    }
+  }
+});
+
 // Bulk modal state
 const showBulkModal = ref(false);
 const bulkForm = ref({
@@ -415,6 +446,7 @@ const deleteStudent = (id: string) => {
   }).then((result) => {
     if (result.isConfirmed) {
       db.deleteStudent(id);
+      selectedStudentIds.value = selectedStudentIds.value.filter(item => item !== id);
       Swal.fire({
         icon: 'success',
         title: 'Santri Terhapus',
@@ -426,9 +458,37 @@ const deleteStudent = (id: string) => {
   });
 };
 
+const deleteSelectedStudents = () => {
+  if (selectedStudentIds.value.length === 0) return;
+
+  Swal.fire({
+    title: `Hapus ${selectedStudentIds.value.length} Santri Terpilih?`,
+    text: `Tindakan ini akan menghapus biodata beserta semua data relasi terkait (nilai, presensi harian, dan setoran hafalan) secara masal untuk ${selectedStudentIds.value.length} santri ini. Lanjutkan?`,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ff3e1d',
+    cancelButtonColor: '#8592a3',
+    confirmButtonText: 'Ya, Hapus Masal',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      db.deleteStudents(selectedStudentIds.value);
+      selectedStudentIds.value = [];
+      Swal.fire({
+        icon: 'success',
+        title: 'Hapus Masal Sukses',
+        text: 'Semua santri yang Anda pilih berhasil dihapus beserta data relasi terkait.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    }
+  });
+};
+
 const resetFilters = () => {
   searchQuery.value = '';
   selectedClass.value = 'all';
+  selectedStudentIds.value = [];
 };
 
 // Bulk Import Handlers

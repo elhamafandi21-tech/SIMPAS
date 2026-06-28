@@ -440,10 +440,16 @@ const processFile = (file: File) => {
           let classId = defaultClassId.value;
           if (normalized.kelas) {
             const classStr = String(normalized.kelas).toLowerCase().trim();
-            const foundCls = db.classes.find(c => 
-              c.nama.toLowerCase().includes(classStr) || 
-              c.id.toLowerCase() === classStr
-            );
+            const cleanStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const classStrClean = cleanStr(classStr);
+            
+            const foundCls = db.classes.find(c => {
+              const dbNameClean = cleanStr(c.nama);
+              const dbIdClean = cleanStr(c.id);
+              return dbNameClean.includes(classStrClean) || 
+                     classStrClean.includes(dbNameClean) ||
+                     dbIdClean === classStrClean;
+            });
             if (foundCls) {
               classId = foundCls.id;
             }

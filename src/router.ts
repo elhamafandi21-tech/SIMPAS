@@ -71,6 +71,11 @@ const router = createRouter({
           component: () => import('./views/Kelas.vue')
         },
         {
+          path: 'ustadz',
+          name: 'manajemen-ustadz',
+          component: () => import('./views/ManajemenUstadz.vue')
+        },
+        {
           path: 'siswa',
           name: 'siswa',
           component: () => import('./views/Siswa.vue')

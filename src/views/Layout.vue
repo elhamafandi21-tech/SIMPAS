@@ -137,6 +137,13 @@
               </router-link>
             </li>
 
+            <li class="menu-item" :class="{ 'active': $route.name === 'manajemen-ustadz' }">
+              <router-link to="/ustadz" class="menu-link" @click="closeMobileSidebar">
+                <ContactIcon class="menu-icon text-danger" />
+                <span>Manajemen Ustadz</span>
+              </router-link>
+            </li>
+
             <li class="menu-item" :class="{ 'active': $route.name === 'siswa' }">
               <router-link to="/siswa" class="menu-link" @click="closeMobileSidebar">
                 <Users2Icon class="menu-icon text-info" />
@@ -329,7 +336,8 @@ import {
   Menu as MenuIcon,
   Sun as SunIcon,
   Moon as MoonIcon,
-  Database as DatabaseIcon
+  Database as DatabaseIcon,
+  Contact as ContactIcon
 } from 'lucide-vue-next';
 
 const router = useRouter();

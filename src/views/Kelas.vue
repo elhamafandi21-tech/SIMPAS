@@ -26,7 +26,7 @@
             <tr>
               <th style="width: 80px">No</th>
               <th>Nama Rombel / Kelas</th>
-              <th>Tingkat Kelas</th>
+              <th>Wali Kelas</th>
               <th>Tahun Ajaran</th>
               <th class="text-end" style="width: 150px">Aksi</th>
             </tr>
@@ -38,7 +38,14 @@
                 <div class="fw-bold text-heading text-md">{{ cls.nama }}</div>
               </td>
               <td>
-                <span class="badge bg-label-info badge-custom text-xs">{{ cls.tingkat }}</span>
+                <div v-if="getWaliKelas(cls.wali_kelas_id)" class="d-flex align-items-center gap-2">
+                  <img :src="getWaliKelas(cls.wali_kelas_id)?.profile_picture_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'" class="rounded-circle border" style="width: 24px; height: 24px; object-fit: cover;" />
+                  <div>
+                    <span class="fw-semibold text-xs-heading d-block">{{ getWaliKelas(cls.wali_kelas_id)?.nama }}</span>
+                    <span class="badge bg-label-primary badge-custom text-xxs m-0" style="font-size: 0.65rem; padding: 0.15rem 0.35rem;">{{ getWaliKelas(cls.wali_kelas_id)?.role }}</span>
+                  </div>
+                </div>
+                <span v-else class="text-xs text-muted font-italic">Belum Ditentukan</span>
               </td>
               <td>
                 <span class="fw-semibold text-secondary">{{ cls.tahun_ajaran }}</span>
@@ -78,14 +85,14 @@
                   <label class="form-label small fw-semibold">Nama Kelas / Rombel</label>
                   <input v-model="form.nama" type="text" class="form-control" placeholder="Contoh: Kelas 1-B Ula" required />
                 </div>
-                <!-- Tingkat -->
+                <!-- Wali Kelas -->
                 <div class="mb-3">
-                  <label class="form-label small fw-semibold">Tingkat Pendidikan</label>
-                  <select v-model="form.tingkat" class="form-select" required>
-                    <option value="">-- Pilih Tingkat --</option>
-                    <option value="Ula (Dasar)">Ula (Dasar)</option>
-                    <option value="Wustha (Menengah)">Wustha (Menengah)</option>
-                    <option value="Ulya (Tinggi)">Ulya (Tinggi)</option>
+                  <label class="form-label small fw-semibold">Wali Kelas / Penanggung Jawab</label>
+                  <select v-model="form.wali_kelas_id" class="form-select">
+                    <option value="">-- Pilih Wali Kelas --</option>
+                    <option v-for="prof in ustadzList" :key="prof.id" :value="prof.id">
+                      {{ prof.nama }} ({{ prof.role }})
+                    </option>
                   </select>
                 </div>
                 <!-- Tahun Ajaran -->
@@ -118,11 +125,18 @@ const isEditMode = ref(false);
 const editId = ref('');
 
 const classes = computed(() => db.classes);
+const ustadzList = computed(() => db.profiles);
+
+const getWaliKelas = (id?: string) => {
+  if (!id) return null;
+  return db.profiles.find(p => p.id === id) || null;
+};
 
 const form = ref({
   nama: '',
   tingkat: '',
-  tahun_ajaran: '2025/2026'
+  tahun_ajaran: '2025/2026',
+  wali_kelas_id: ''
 });
 
 const openAddModal = () => {
@@ -131,7 +145,8 @@ const openAddModal = () => {
   form.value = {
     nama: '',
     tingkat: '',
-    tahun_ajaran: '2025/2026'
+    tahun_ajaran: '2025/2026',
+    wali_kelas_id: ''
   };
   showModal.value = true;
 };
@@ -141,8 +156,9 @@ const openEditModal = (cls: ClassRoom) => {
   editId.value = cls.id;
   form.value = {
     nama: cls.nama,
-    tingkat: cls.tingkat,
-    tahun_ajaran: cls.tahun_ajaran
+    tingkat: cls.tingkat || '',
+    tahun_ajaran: cls.tahun_ajaran,
+    wali_kelas_id: cls.wali_kelas_id || ''
   };
   showModal.value = true;
 };

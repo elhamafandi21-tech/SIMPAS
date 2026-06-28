@@ -122,12 +122,29 @@ ALTER TABLE public.teaching_journals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.nadhoman_setorans ENABLE ROW LEVEL SECURITY;
 
 -- Buat policy sederhana agar Anon & Authenticated dapat membaca/menulis (Mempermudah integrasi SIMPAS)
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.profiles;
 CREATE POLICY "Allow all actions for everyone" ON public.profiles FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.subjects;
 CREATE POLICY "Allow all actions for everyone" ON public.subjects FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.classes;
 CREATE POLICY "Allow all actions for everyone" ON public.classes FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.students;
 CREATE POLICY "Allow all actions for everyone" ON public.students FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.grades;
 CREATE POLICY "Allow all actions for everyone" ON public.grades FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.attendance;
 CREATE POLICY "Allow all actions for everyone" ON public.attendance FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.syllabus_targets;
 CREATE POLICY "Allow all actions for everyone" ON public.syllabus_targets FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.teaching_journals;
 CREATE POLICY "Allow all actions for everyone" ON public.teaching_journals FOR ALL USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.nadhoman_setorans;
 CREATE POLICY "Allow all actions for everyone" ON public.nadhoman_setorans FOR ALL USING (true) WITH CHECK (true);

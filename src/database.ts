@@ -21,8 +21,9 @@ export interface Subject {
 export interface ClassRoom {
   id: string;
   nama: string;
-  tingkat: string;
+  tingkat?: string;
   tahun_ajaran: string;
+  wali_kelas_id?: string;
 }
 
 export interface Student {
@@ -121,9 +122,9 @@ const initialSubjects: Subject[] = [
 ];
 
 const initialClasses: ClassRoom[] = [
-  { id: 'cls-1', nama: 'Kelas 1-A Ula', tingkat: 'Ula (Dasar)', tahun_ajaran: '2025/2026' },
-  { id: 'cls-2', nama: 'Kelas 2-A Ula', tingkat: 'Ula (Dasar)', tahun_ajaran: '2025/2026' },
-  { id: 'cls-3', nama: 'Kelas 3-B Wustha', tingkat: 'Wustha (Menengah)', tahun_ajaran: '2025/2026' }
+  { id: 'cls-1', nama: 'Kelas 1-A Ula', tingkat: 'Ula (Dasar)', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
+  { id: 'cls-2', nama: 'Kelas 2-A Ula', tingkat: 'Ula (Dasar)', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
+  { id: 'cls-3', nama: 'Kelas 3-B Wustha', tingkat: 'Wustha (Menengah)', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-2' }
 ];
 
 const initialStudents: Student[] = [
@@ -275,7 +276,7 @@ export class SimpasDatabase {
               const formattedClasses = this.classes.map((c: any) => ({
                 id: c.id,
                 nama: c.nama,
-                tingkat: c.tingkat,
+                tingkat: c.tingkat || '',
                 tahun_ajaran: c.tahun_ajaran
               }));
               await client.from('classes').upsert(formattedClasses);
@@ -360,6 +361,52 @@ export class SimpasDatabase {
     return null;
   }
 
+  // CRUD Profiles / Ustadz
+  addProfile(profile: Omit<Profile, 'id'>) {
+    const usernameVal = profile.username || profile.nama.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 12);
+    const newProfile = { 
+      ...profile, 
+      id: 'prof-' + Date.now(),
+      username: usernameVal
+    };
+    this.profiles.push(newProfile);
+    this.saveAll();
+    return newProfile;
+  }
+
+  editProfile(id: string, updated: Omit<Profile, 'id'>) {
+    const idx = this.profiles.findIndex(p => p.id === id);
+    if (idx !== -1) {
+      const usernameVal = updated.username || updated.nama.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 12);
+      this.profiles[idx] = { 
+        ...this.profiles[idx], 
+        ...updated,
+        username: usernameVal
+      };
+      if (this.session.currentUser && this.session.currentUser.id === id) {
+        this.session.currentUser = this.profiles[idx];
+      }
+      this.saveAll();
+      return this.profiles[idx];
+    }
+    return null;
+  }
+
+  deleteProfile(id: string) {
+    this.profiles = this.profiles.filter(p => p.id !== id);
+    // Clean up associations
+    this.classes.forEach(c => {
+      if (c.wali_kelas_id === id) {
+        c.wali_kelas_id = undefined;
+      }
+    });
+    this.syllabusTargets = this.syllabusTargets.filter(t => t.ustadz_id !== id);
+    this.teachingJournals = this.teachingJournals.filter(j => j.ustadz_id !== id);
+    this.nadhomanSetorans = this.nadhomanSetorans.filter(n => n.ustadz_id !== id);
+    this.attendance = this.attendance.filter(a => !(a.person_id === id && a.role === 'Ustadz'));
+    this.saveAll();
+  }
+
   // CRUD Subjects
   addSubject(sub: Omit<Subject, 'id'>) {
     const newSub = { ...sub, id: 'sub-' + Date.now() };
@@ -440,6 +487,15 @@ export class SimpasDatabase {
     this.grades = this.grades.filter(g => g.student_id !== id);
     this.attendance = this.attendance.filter(a => a.person_id !== id && a.role === 'Santri');
     this.nadhomanSetorans = this.nadhomanSetorans.filter(n => n.student_id !== id);
+    this.saveAll();
+  }
+
+  deleteStudents(ids: string[]) {
+    this.students = this.students.filter(s => !ids.includes(s.id));
+    // Cascade delete grades, attendance, nadhoman
+    this.grades = this.grades.filter(g => !ids.includes(g.student_id));
+    this.attendance = this.attendance.filter(a => !(ids.includes(a.person_id) && a.role === 'Santri'));
+    this.nadhomanSetorans = this.nadhomanSetorans.filter(n => !ids.includes(n.student_id));
     this.saveAll();
   }
 

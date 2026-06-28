@@ -230,7 +230,7 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
       const formattedClasses = dbInstance.classes.map((c: any) => ({
         id: c.id,
         nama: c.nama,
-        tingkat: c.tingkat,
+        tingkat: c.tingkat || '',
         tahun_ajaran: c.tahun_ajaran
       }));
       const { error } = await client.from('classes').upsert(formattedClasses);
@@ -351,7 +351,7 @@ export async function pullSupabaseToLocal(dbInstance: any): Promise<{ success: b
       dbInstance.classes = classesData.map((c: any) => ({
         id: c.id,
         nama: c.nama,
-        tingkat: c.tingkat,
+        tingkat: c.tingkat || '',
         tahun_ajaran: c.tahun_ajaran
       }));
       results.classes = classesData.length;
