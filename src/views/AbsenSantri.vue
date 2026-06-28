@@ -45,7 +45,7 @@
           <thead class="table-light">
             <tr>
               <th style="width: 60px">No</th>
-              <th style="width: 100px">NIS</th>
+              <th style="width: 180px">Nomor Urut Santri (No.)</th>
               <th>Nama Lengkap</th>
               <th style="width: 120px">Jenis Kelamin</th>
               <th style="width: 320px; text-align: center">Status Kehadiran</th>
@@ -56,7 +56,7 @@
             <template v-for="(student, idx) in studentsList" :key="student.id">
               <tr v-if="attendanceMap[student.id]">
                 <td>{{ idx + 1 }}</td>
-                <td class="fw-semibold text-xs">{{ student.nis }}</td>
+                <td class="fw-semibold text-xs text-primary">{{ student.nis }}</td>
                 <td>
                   <div class="fw-bold text-heading">{{ student.nama }}</div>
                 </td>
@@ -64,54 +64,50 @@
                   <span class="badge bg-label-secondary badge-custom text-xs">{{ student.gender }}</span>
                 </td>
                 <td>
-                  <div class="d-flex justify-content-center gap-3">
+                  <div class="d-flex justify-content-center gap-1">
                     <!-- Hadir -->
-                    <label class="d-flex align-items-center gap-1 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        :name="'att-' + student.id" 
-                        value="Hadir" 
-                        v-model="attendanceMap[student.id].status"
-                        class="form-check-input text-success"
-                      />
-                      <span class="text-xs text-success fw-bold">Hadir</span>
-                    </label>
+                    <button 
+                      type="button"
+                      @click="setAttendanceStatus(student.id, 'Hadir')"
+                      class="btn btn-sm py-1 px-2 d-flex align-items-center gap-1"
+                      :class="attendanceMap[student.id]?.status === 'Hadir' ? 'btn-success text-white fw-bold' : 'btn-outline-success'"
+                      style="font-size: 0.75rem;"
+                    >
+                      Hadir
+                    </button>
                     
                     <!-- Izin -->
-                    <label class="d-flex align-items-center gap-1 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        :name="'att-' + student.id" 
-                        value="Izin" 
-                        v-model="attendanceMap[student.id].status"
-                        class="form-check-input text-warning"
-                      />
-                      <span class="text-xs text-warning fw-bold">Izin</span>
-                    </label>
+                    <button 
+                      type="button"
+                      @click="setAttendanceStatus(student.id, 'Izin')"
+                      class="btn btn-sm py-1 px-2 d-flex align-items-center gap-1"
+                      :class="attendanceMap[student.id]?.status === 'Izin' ? 'btn-warning text-white fw-bold' : 'btn-outline-warning'"
+                      style="font-size: 0.75rem;"
+                    >
+                      Izin
+                    </button>
 
                     <!-- Sakit -->
-                    <label class="d-flex align-items-center gap-1 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        :name="'att-' + student.id" 
-                        value="Sakit" 
-                        v-model="attendanceMap[student.id].status"
-                        class="form-check-input text-info"
-                      />
-                      <span class="text-xs text-info fw-bold">Sakit</span>
-                    </label>
+                    <button 
+                      type="button"
+                      @click="setAttendanceStatus(student.id, 'Sakit')"
+                      class="btn btn-sm py-1 px-2 d-flex align-items-center gap-1"
+                      :class="attendanceMap[student.id]?.status === 'Sakit' ? 'btn-info text-white fw-bold' : 'btn-outline-info'"
+                      style="font-size: 0.75rem;"
+                    >
+                      Sakit
+                    </button>
 
                     <!-- Alfa -->
-                    <label class="d-flex align-items-center gap-1 cursor-pointer">
-                      <input 
-                        type="radio" 
-                        :name="'att-' + student.id" 
-                        value="Alfa" 
-                        v-model="attendanceMap[student.id].status"
-                        class="form-check-input text-danger"
-                      />
-                      <span class="text-xs text-danger fw-bold">Alfa</span>
-                    </label>
+                    <button 
+                      type="button"
+                      @click="setAttendanceStatus(student.id, 'Alfa')"
+                      class="btn btn-sm py-1 px-2 d-flex align-items-center gap-1"
+                      :class="attendanceMap[student.id]?.status === 'Alfa' ? 'btn-danger text-white fw-bold' : 'btn-outline-danger'"
+                      style="font-size: 0.75rem;"
+                    >
+                      Alfa
+                    </button>
                   </div>
                 </td>
                 <td>
@@ -198,6 +194,14 @@ const loadStudentAttendance = () => {
 watch([selectedClass, attendanceDate], () => {
   loadStudentAttendance();
 }, { immediate: true });
+
+const setAttendanceStatus = (studentId: string, status: 'Hadir' | 'Izin' | 'Sakit' | 'Alfa') => {
+  if (attendanceMap.value[studentId]) {
+    attendanceMap.value[studentId].status = status;
+  } else {
+    attendanceMap.value[studentId] = { status, notes: '' };
+  }
+};
 
 // Auto fill all as Present
 const autoFillHadir = () => {
