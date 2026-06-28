@@ -103,7 +103,7 @@
                   <select v-model="form.class_id" class="form-select" required>
                     <option value="">-- Pilih Kelas --</option>
                     <option v-for="cls in classes" :key="cls.id" :value="cls.id">
-                      {{ cls.nama }} ({{ cls.tingkat }})
+                      {{ cls.nama }}
                     </option>
                   </select>
                 </div>

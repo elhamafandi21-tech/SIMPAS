@@ -128,7 +128,7 @@
               <select v-model="defaultClassId" class="form-select">
                 <option value="">-- Pilih Kelas Default --</option>
                 <option v-for="cls in classes" :key="cls.id" :value="cls.id">
-                  {{ cls.nama }} ({{ cls.tingkat }})
+                  {{ cls.nama }}
                 </option>
               </select>
             </div>
@@ -282,7 +282,7 @@
                 <li class="mb-1"><strong class="text-dark">NIS</strong>: Pastikan unik (angka, misal: 25001).</li>
                 <li class="mb-1"><strong class="text-dark">Nama</strong>: Nama lengkap santri.</li>
                 <li class="mb-1"><strong class="text-dark">Gender</strong>: Laki-laki atau Perempuan.</li>
-                <li class="mb-1"><strong class="text-dark">Kelas</strong>: Dapat diisi nama kelas (misal: "Kelas 1-A Ula") atau ID kelas.</li>
+                <li class="mb-1"><strong class="text-dark">Kelas</strong>: Dapat diisi nama kelas (misal: "Kelas 1-A") atau ID kelas.</li>
               </ul>
             </div>
             <div class="col-md-4 border-end-md">
@@ -656,7 +656,7 @@ const saveImport = () => {
           email: item.email,
           hp: item.hp,
           role: 'Ustadz',
-          profile_picture_url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150',
+          profile_picture_url: '',
           password: item.password || 'password'
         });
         successCount++;
@@ -700,8 +700,8 @@ const downloadTemplate = (type: 'siswa' | 'ustadz' | 'kitab') => {
   if (type === 'siswa') {
     headers = ['NIS', 'Nama Lengkap', 'Gender', 'Kelas', 'Tempat Lahir', 'Tanggal Lahir', 'HP Orang Tua', 'Alamat'];
     samples = [
-      { 'NIS': '25010', 'Nama Lengkap': 'M. Wildan Al-Farabi', 'Gender': 'Laki-laki', 'Kelas': 'Kelas 1-A Ula', 'Tempat Lahir': 'Salatiga', 'Tanggal Lahir': '2014-06-15', 'HP Orang Tua': '081234567890', 'Alamat': 'Tingkir Tengah, Salatiga' },
-      { 'NIS': '25011', 'Nama Lengkap': 'Lailatul Fitriyyah', 'Gender': 'Perempuan', 'Kelas': 'Kelas 2-A Ula', 'Tempat Lahir': 'Semarang', 'Tanggal Lahir': '2013-11-20', 'HP Orang Tua': '089876543210', 'Alamat': 'Ledok, Salatiga' }
+      { 'NIS': '25010', 'Nama Lengkap': 'M. Wildan Al-Farabi', 'Gender': 'Laki-laki', 'Kelas': 'Kelas 1-A', 'Tempat Lahir': 'Salatiga', 'Tanggal Lahir': '2014-06-15', 'HP Orang Tua': '081234567890', 'Alamat': 'Tingkir Tengah, Salatiga' },
+      { 'NIS': '25011', 'Nama Lengkap': 'Lailatul Fitriyyah', 'Gender': 'Perempuan', 'Kelas': 'Kelas 2-A', 'Tempat Lahir': 'Semarang', 'Tanggal Lahir': '2013-11-20', 'HP Orang Tua': '089876543210', 'Alamat': 'Ledok, Salatiga' }
     ];
     fileName = 'Template_Santri_SIMPAS.xlsx';
   } else if (type === 'ustadz') {

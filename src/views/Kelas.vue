@@ -4,7 +4,7 @@
       <div class="col-12 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div>
           <h4 class="mb-1 text-heading">Manajemen Kelas Pembelajaran</h4>
-          <p class="text-muted mb-0">Kelola rombongan belajar (rombel) dan tingkat jenjang pendidikan Madin Pancasila Salatiga.</p>
+          <p class="text-muted mb-0">Kelola rombongan belajar (rombel) dan pemetaan Wali Kelas Madin Pancasila Salatiga.</p>
         </div>
         <div>
           <button @click="openAddModal" class="btn btn-primary d-flex align-items-center gap-2">
@@ -39,7 +39,10 @@
               </td>
               <td>
                 <div v-if="getWaliKelas(cls.wali_kelas_id)" class="d-flex align-items-center gap-2">
-                  <img :src="getWaliKelas(cls.wali_kelas_id)?.profile_picture_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'" class="rounded-circle border" style="width: 24px; height: 24px; object-fit: cover;" />
+                  <img v-if="getWaliKelas(cls.wali_kelas_id)?.profile_picture_url" :src="getWaliKelas(cls.wali_kelas_id)?.profile_picture_url" class="rounded-circle border" style="width: 24px; height: 24px; object-fit: cover;" />
+                  <div v-else class="rounded-circle border d-flex align-items-center justify-content-center bg-light text-secondary" style="width: 24px; height: 24px; min-width: 24px;">
+                    <UserIcon :size="12" />
+                  </div>
                   <div>
                     <span class="fw-semibold text-xs-heading d-block">{{ getWaliKelas(cls.wali_kelas_id)?.nama }}</span>
                     <span class="badge bg-label-primary badge-custom text-xxs m-0" style="font-size: 0.65rem; padding: 0.15rem 0.35rem;">{{ getWaliKelas(cls.wali_kelas_id)?.role }}</span>
@@ -83,7 +86,7 @@
                 <!-- Nama Kelas -->
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Nama Kelas / Rombel</label>
-                  <input v-model="form.nama" type="text" class="form-control" placeholder="Contoh: Kelas 1-B Ula" required />
+                  <input v-model="form.nama" type="text" class="form-control" placeholder="Contoh: Kelas 1-B" required />
                 </div>
                 <!-- Wali Kelas -->
                 <div class="mb-3">
@@ -118,7 +121,7 @@
 import { ref, computed } from 'vue';
 import { db, ClassRoom } from '../database';
 import Swal from 'sweetalert2';
-import { Plus as PlusIcon, Edit as EditIcon, Trash as TrashIcon } from 'lucide-vue-next';
+import { Plus as PlusIcon, Edit as EditIcon, Trash as TrashIcon, User as UserIcon } from 'lucide-vue-next';
 
 const showModal = ref(false);
 const isEditMode = ref(false);
@@ -134,7 +137,6 @@ const getWaliKelas = (id?: string) => {
 
 const form = ref({
   nama: '',
-  tingkat: '',
   tahun_ajaran: '2025/2026',
   wali_kelas_id: ''
 });
@@ -144,7 +146,6 @@ const openAddModal = () => {
   editId.value = '';
   form.value = {
     nama: '',
-    tingkat: '',
     tahun_ajaran: '2025/2026',
     wali_kelas_id: ''
   };
@@ -156,7 +157,6 @@ const openEditModal = (cls: ClassRoom) => {
   editId.value = cls.id;
   form.value = {
     nama: cls.nama,
-    tingkat: cls.tingkat || '',
     tahun_ajaran: cls.tahun_ajaran,
     wali_kelas_id: cls.wali_kelas_id || ''
   };

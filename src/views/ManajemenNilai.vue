@@ -291,9 +291,9 @@
                         <td class="py-1">{{ activeRaportStudent?.nis }}</td>
                       </tr>
                       <tr>
-                        <td class="py-1">Kelas / Tingkat / <span class="fw-bold">الصف والمرحلة</span></td>
+                        <td class="py-1">Kelas / <span class="fw-bold">الصف</span></td>
                         <td class="py-1">:</td>
-                        <td class="py-1">{{ selectedStudentClassObj?.nama }} ({{ selectedStudentClassObj?.tingkat }})</td>
+                        <td class="py-1">{{ selectedStudentClassObj?.nama }}</td>
                       </tr>
                     </tbody>
                   </table>

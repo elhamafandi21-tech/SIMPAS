@@ -100,7 +100,7 @@ const initialProfiles: Profile[] = [
     email: 'ustadz@simpas.com',
     hp: '081234567890',
     role: 'Ustadz',
-    profile_picture_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150',
+    profile_picture_url: '',
     password: 'password'
   },
   {
@@ -109,7 +109,7 @@ const initialProfiles: Profile[] = [
     email: 'admin@simpas.com',
     hp: '089876543210',
     role: 'Admin',
-    profile_picture_url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150',
+    profile_picture_url: '',
     password: 'password'
   }
 ];
@@ -122,9 +122,9 @@ const initialSubjects: Subject[] = [
 ];
 
 const initialClasses: ClassRoom[] = [
-  { id: 'cls-1', nama: 'Kelas 1-A Ula', tingkat: 'Ula (Dasar)', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
-  { id: 'cls-2', nama: 'Kelas 2-A Ula', tingkat: 'Ula (Dasar)', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
-  { id: 'cls-3', nama: 'Kelas 3-B Wustha', tingkat: 'Wustha (Menengah)', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-2' }
+  { id: 'cls-1', nama: 'Kelas 1-A', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
+  { id: 'cls-2', nama: 'Kelas 2-A', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
+  { id: 'cls-3', nama: 'Kelas 3-B', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-2' }
 ];
 
 const initialStudents: Student[] = [
@@ -276,8 +276,8 @@ export class SimpasDatabase {
               const formattedClasses = this.classes.map((c: any) => ({
                 id: c.id,
                 nama: c.nama,
-                tingkat: c.tingkat || '',
-                tahun_ajaran: c.tahun_ajaran
+                tahun_ajaran: c.tahun_ajaran,
+                wali_kelas_id: c.wali_kelas_id || null
               }));
               await client.from('classes').upsert(formattedClasses);
               await client.from('students').upsert(this.students);

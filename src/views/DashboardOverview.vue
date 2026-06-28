@@ -118,7 +118,7 @@
                     <span class="badge bg-label-success p-1"><FolderPlusIcon :size="16" /></span>
                     Buka Kelas Baru
                   </h6>
-                  <p class="text-xs text-muted mb-3">Buat rombel baru untuk tingkat Ula, Wustha, atau Ulya dengan mudah.</p>
+                  <p class="text-xs text-muted mb-3">Buat rombel baru dan tentukan Wali Kelas dengan mudah.</p>
                 </div>
                 <button @click="openAddClassModal" class="btn btn-success text-white btn-sm w-100 d-flex align-items-center justify-content-center gap-1">
                   <PlusIcon :size="14" /> Buat Kelas Baru
@@ -410,15 +410,15 @@
               <form @submit.prevent="saveClass">
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Nama Kelas / Rombel</label>
-                  <input v-model="classForm.nama" type="text" class="form-control" placeholder="Contoh: Kelas 1-C Ula" required />
+                  <input v-model="classForm.nama" type="text" class="form-control" placeholder="Contoh: Kelas 1-C" required />
                 </div>
                 <div class="mb-3">
-                  <label class="form-label small fw-semibold">Tingkat Pendidikan</label>
-                  <select v-model="classForm.tingkat" class="form-select" required>
-                    <option value="">-- Pilih Tingkat --</option>
-                    <option value="Ula (Dasar)">Ula (Dasar)</option>
-                    <option value="Wustha (Menengah)">Wustha (Menengah)</option>
-                    <option value="Ulya (Tinggi)">Ulya (Tinggi)</option>
+                  <label class="form-label small fw-semibold">Wali Kelas / Penanggung Jawab</label>
+                  <select v-model="classForm.wali_kelas_id" class="form-select">
+                    <option value="">-- Pilih Wali Kelas --</option>
+                    <option v-for="prof in ustadzList" :key="prof.id" :value="prof.id">
+                      {{ prof.nama }} ({{ prof.role }})
+                    </option>
                   </select>
                 </div>
                 <div class="mb-3">
@@ -535,9 +535,10 @@ const studentForm = ref({
 });
 
 // Single class form ref
+const ustadzList = computed(() => db.profiles);
 const classForm = ref({
   nama: '',
-  tingkat: '',
+  wali_kelas_id: '',
   tahun_ajaran: '2025/2026'
 });
 
@@ -582,7 +583,7 @@ const openAddStudentModal = () => {
 const openAddClassModal = () => {
   classForm.value = {
     nama: '',
-    tingkat: 'Ula (Dasar)',
+    wali_kelas_id: '',
     tahun_ajaran: '2025/2026'
   };
   showClassModal.value = true;

@@ -17,7 +17,7 @@
           <select v-model="selectedClass" class="form-select" @change="loadStudentAttendance">
             <option value="">-- Silakan Pilih Kelas --</option>
             <option v-for="cls in classes" :key="cls.id" :value="cls.id">
-              {{ cls.nama }} ({{ cls.tingkat }})
+              {{ cls.nama }}
             </option>
           </select>
         </div>

@@ -27,8 +27,8 @@ CREATE TABLE IF NOT EXISTS public.subjects (
 CREATE TABLE IF NOT EXISTS public.classes (
     id TEXT PRIMARY KEY,
     nama TEXT NOT NULL,
-    tingkat TEXT NOT NULL,
     tahun_ajaran TEXT NOT NULL,
+    wali_kelas_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

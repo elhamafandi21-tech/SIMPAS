@@ -265,15 +265,15 @@
             <form @submit.prevent="saveQuickClass">
               <div class="mb-3">
                 <label class="form-label small fw-semibold">Nama Kelas / Rombel</label>
-                <input v-model="quickClassForm.nama" type="text" class="form-control" placeholder="Contoh: Kelas 1-C Ula" required />
+                <input v-model="quickClassForm.nama" type="text" class="form-control" placeholder="Contoh: Kelas 1-C" required />
               </div>
               <div class="mb-3">
-                <label class="form-label small fw-semibold">Tingkat Pendidikan</label>
-                <select v-model="quickClassForm.tingkat" class="form-select" required>
-                  <option value="">-- Pilih Tingkat --</option>
-                  <option value="Ula (Dasar)">Ula (Dasar)</option>
-                  <option value="Wustha (Menengah)">Wustha (Menengah)</option>
-                  <option value="Ulya (Tinggi)">Ulya (Tinggi)</option>
+                <label class="form-label small fw-semibold">Wali Kelas / Penanggung Jawab</label>
+                <select v-model="quickClassForm.wali_kelas_id" class="form-select">
+                  <option value="">-- Pilih Wali Kelas --</option>
+                  <option v-for="prof in ustadzList" :key="prof.id" :value="prof.id">
+                    {{ prof.nama }} ({{ prof.role }})
+                  </option>
                 </select>
               </div>
               <div class="mb-3">
@@ -335,9 +335,10 @@ const bulkForm = ref({
 
 // Quick class modal state
 const showQuickClassModal = ref(false);
+const ustadzList = computed(() => db.profiles);
 const quickClassForm = ref({
   nama: '',
-  tingkat: '',
+  wali_kelas_id: '',
   tahun_ajaran: '2025/2026'
 });
 
@@ -578,7 +579,7 @@ const processBulkImport = () => {
 const openQuickClassModal = () => {
   quickClassForm.value = {
     nama: '',
-    tingkat: '',
+    wali_kelas_id: '',
     tahun_ajaran: '2025/2026'
   };
   showQuickClassModal.value = true;

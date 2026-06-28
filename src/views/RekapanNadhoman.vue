@@ -20,7 +20,7 @@
           <select v-model="selectedClass" class="form-select">
             <option value="all">-- Semua Kelas --</option>
             <option v-for="cls in classes" :key="cls.id" :value="cls.id">
-              {{ cls.nama }} ({{ cls.tingkat }})
+              {{ cls.nama }}
             </option>
           </select>
         </div>

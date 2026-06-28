@@ -85,8 +85,8 @@ CREATE TABLE IF NOT EXISTS public.subjects (
 CREATE TABLE IF NOT EXISTS public.classes (
     id TEXT PRIMARY KEY,
     nama TEXT NOT NULL,
-    tingkat TEXT NOT NULL,
     tahun_ajaran TEXT NOT NULL,
+    wali_kelas_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -230,8 +230,8 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
       const formattedClasses = dbInstance.classes.map((c: any) => ({
         id: c.id,
         nama: c.nama,
-        tingkat: c.tingkat || '',
-        tahun_ajaran: c.tahun_ajaran
+        tahun_ajaran: c.tahun_ajaran,
+        wali_kelas_id: c.wali_kelas_id || null
       }));
       const { error } = await client.from('classes').upsert(formattedClasses);
       if (error) throw new Error(`Classes Sync Failed: ${error.message}`);
@@ -351,8 +351,8 @@ export async function pullSupabaseToLocal(dbInstance: any): Promise<{ success: b
       dbInstance.classes = classesData.map((c: any) => ({
         id: c.id,
         nama: c.nama,
-        tingkat: c.tingkat || '',
-        tahun_ajaran: c.tahun_ajaran
+        tahun_ajaran: c.tahun_ajaran,
+        wali_kelas_id: c.wali_kelas_id || ''
       }));
       results.classes = classesData.length;
     }

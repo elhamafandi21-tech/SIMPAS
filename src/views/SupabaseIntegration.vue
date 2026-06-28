@@ -250,12 +250,21 @@
 
                 <div class="alert bg-label-info text-info border-0 p-3 small">
                   <h6 class="fw-bold mb-1" style="color: var(--info)"><InfoIcon :size="16" class="align-middle me-1" /> Cara Menyiapkan Database Supabase:</h6>
-                  <ol class="mb-0 ps-3 text-xs text-muted">
-                    <li>Masuk ke <a href="https://supabase.com" target="_blank" class="fw-semibold">Supabase Dashboard</a> lalu buat proyek baru.</li>
+                  <ol class="mb-2 ps-3 text-xs text-muted">
+                    <li>Masuk ke <a href="https://supabase.com" target="_blank" class="fw-semibold">Supabase Dashboard</a> lalu buat proyek baru atau gunakan yang sudah ada.</li>
                     <li>Di menu sidebar kiri, pilih <strong>SQL Editor</strong>, lalu klik <strong>New query</strong>.</li>
                     <li>Tempelkan script SQL di atas, lalu tekan tombol <strong>Run</strong> di kanan bawah.</li>
                     <li>Salin URL & Anon Key proyek baru Anda di menu <strong>Settings > API</strong> lalu tempel di form kiri halaman ini!</li>
                   </ol>
+
+                  <div class="border-top pt-2 mt-2">
+                    <strong class="d-block text-warning mb-1">⚠️ Migrasi/Update Database yang Sudah Ada:</strong>
+                    <span class="text-xs text-muted d-block mb-2">
+                      Jika Anda mendapatkan error saat melakukan Push Data karena perubahan struktur kelas (penghapusan kolom <code>tingkat</code> dan penambahan <code>wali_kelas_id</code>), silakan salin dan jalankan query berikut di <strong>SQL Editor Supabase</strong> Anda untuk memperbarui skema:
+                    </span>
+                    <pre class="bg-dark text-warning p-2 rounded text-xxs mb-0 font-mono" style="font-family: monospace;">ALTER TABLE public.classes DROP COLUMN IF EXISTS tingkat;
+ALTER TABLE public.classes ADD COLUMN IF NOT EXISTS wali_kelas_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL;</pre>
+                  </div>
                 </div>
               </div>
             </div>

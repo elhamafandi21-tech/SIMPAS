@@ -51,7 +51,10 @@
           <div class="card-body p-4 text-center">
             <!-- Profile Photo -->
             <div class="mb-3 position-relative d-inline-block">
-              <img :src="prof.profile_picture_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150'" class="rounded-circle border border-3 shadow-xs profile-img" alt="Avatar" />
+              <img v-if="prof.profile_picture_url" :src="prof.profile_picture_url" class="rounded-circle border border-3 shadow-xs profile-img object-fit-cover" alt="Avatar" />
+              <div v-else class="rounded-circle border border-3 shadow-xs profile-img d-flex align-items-center justify-content-center bg-light text-secondary" style="width: 90px; height: 90px;">
+                <UserIcon :size="40" />
+              </div>
             </div>
 
             <!-- Profile Info -->
@@ -162,25 +165,41 @@
                   </div>
                 </div>
 
-                <!-- Profile Picture Presets or URL -->
+                <!-- Profile Picture Upload -->
                 <div class="mb-3">
-                  <label class="form-label small fw-semibold">Foto Profil (URL)</label>
-                  <input v-model="form.profile_picture_url" type="text" class="form-control mb-2" placeholder="Gunakan URL foto atau pilih ikon di bawah" required />
+                  <label class="form-label small fw-semibold d-block">Foto Profil (JPG/PNG)</label>
                   
-                  <label class="form-label text-xs text-muted d-block mb-1">Atau pilih preset foto yang tersedia:</label>
-                  <div class="d-flex gap-2 flex-wrap justify-content-start">
-                    <button 
-                      type="button" 
-                      v-for="(preset, idx) in avatarPresets" 
-                      :key="idx" 
-                      @click="form.profile_picture_url = preset.url"
-                      class="btn p-1 border-0 rounded-circle position-relative preset-avatar-btn"
-                      :class="{ 'ring-active': form.profile_picture_url === preset.url }"
-                      style="width: 38px; height: 38px;"
-                    >
-                      <img :src="preset.url" class="rounded-circle w-100 h-100 object-fit-cover border" :alt="preset.name" />
-                    </button>
+                  <div class="d-flex align-items-center gap-3">
+                    <!-- Current Picture Preview -->
+                    <div class="position-relative">
+                      <img v-if="form.profile_picture_url" :src="form.profile_picture_url" class="rounded-circle border object-fit-cover shadow-sm" style="width: 70px; height: 70px;" alt="Preview" />
+                      <div v-else class="rounded-circle border d-flex align-items-center justify-content-center bg-light text-secondary" style="width: 70px; height: 70px;">
+                        <UserIcon :size="32" />
+                      </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex flex-column gap-2">
+                      <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary d-flex align-items-center gap-1" @click="triggerModalFileInput">
+                          <UploadIcon :size="14" /> Unggah Foto
+                        </button>
+                        <button v-if="form.profile_picture_url" type="button" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" @click="form.profile_picture_url = ''">
+                          <Trash2Icon :size="14" /> Hapus Foto
+                        </button>
+                      </div>
+                      <span class="text-xs text-muted">Format: JPG atau PNG. Ukuran ideal 1:1.</span>
+                    </div>
                   </div>
+
+                  <!-- Hidden Input File -->
+                  <input 
+                    type="file" 
+                    ref="modalFileInput" 
+                    accept="image/png, image/jpeg, image/jpg" 
+                    style="display: none" 
+                    @change="onModalFileChange" 
+                  />
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
@@ -211,7 +230,10 @@ import {
   Phone as PhoneIcon,
   Key as KeyIcon,
   Users as UsersIcon,
-  Check as CheckIcon
+  Check as CheckIcon,
+  User as UserIcon,
+  Upload as UploadIcon,
+  Trash2 as Trash2Icon
 } from 'lucide-vue-next';
 
 const showModal = ref(false);
@@ -226,14 +248,7 @@ const currentAdminId = computed(() => db.session.currentUser?.id || '');
 
 const profiles = computed(() => db.profiles);
 
-const avatarPresets = [
-  { name: 'Ustadz 1', url: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150' },
-  { name: 'Ustadz 2', url: 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150' },
-  { name: 'Ustadzah 1', url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150' },
-  { name: 'Ustadzah 2', url: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150' },
-  { name: 'Ustadz 3', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150' },
-  { name: 'Ustadzah 3', url: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150' }
-];
+const modalFileInput = ref<HTMLInputElement | null>(null);
 
 const form = ref({
   nama: '',
@@ -243,7 +258,7 @@ const form = ref({
   hp: '',
   telpon: '',
   role: 'Ustadz' as 'Ustadz' | 'Admin',
-  profile_picture_url: avatarPresets[0].url
+  profile_picture_url: ''
 });
 
 const filteredProfiles = computed(() => {
@@ -274,6 +289,63 @@ const resetFilters = () => {
   roleFilter.value = 'all';
 };
 
+const triggerModalFileInput = () => {
+  if (modalFileInput.value) {
+    modalFileInput.value.click();
+  }
+};
+
+const onModalFileChange = (e: Event) => {
+  const target = e.target as HTMLInputElement;
+  const files = target.files;
+  if (!files || files.length === 0) return;
+
+  const file = files[0];
+  if (!file.type.match('image.*')) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Berkas Tidak Valid',
+      text: 'Silakan pilih berkas gambar yang valid (JPG atau PNG).',
+      confirmButtonColor: '#ff3e1d'
+    });
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.src = event.target?.result as string;
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const max_size = 180; // 180x180 resolution is crisp and lightweight
+      let width = img.width;
+      let height = img.height;
+
+      if (width > height) {
+        if (width > max_size) {
+          height *= max_size / width;
+          width = max_size;
+        }
+      } else {
+        if (height > max_size) {
+          width *= max_size / height;
+          height = max_size;
+        }
+      }
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        form.value.profile_picture_url = dataUrl;
+      }
+    };
+  };
+  reader.readAsDataURL(file);
+};
+
 const openAddModal = () => {
   isEditMode.value = false;
   editId.value = '';
@@ -285,7 +357,7 @@ const openAddModal = () => {
     hp: '',
     telpon: '',
     role: 'Ustadz',
-    profile_picture_url: avatarPresets[0].url
+    profile_picture_url: ''
   };
   showModal.value = true;
 };
@@ -301,7 +373,7 @@ const openEditModal = (prof: Profile) => {
     hp: prof.hp || '',
     telpon: prof.telpon || '',
     role: prof.role,
-    profile_picture_url: prof.profile_picture_url || avatarPresets[0].url
+    profile_picture_url: prof.profile_picture_url || ''
   };
   showModal.value = true;
 };

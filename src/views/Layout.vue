@@ -29,7 +29,10 @@
         <!-- ROLE BADGE -->
         <div class="px-4 mb-3">
           <div class="p-2 rounded d-flex align-items-center bg-light border">
-            <img :src="currentUser?.profile_picture_url" class="rounded-circle me-2" width="30" height="30" alt="Avatar" />
+            <img v-if="currentUser?.profile_picture_url" :src="currentUser?.profile_picture_url" class="rounded-circle me-2 object-fit-cover" width="30" height="30" alt="Avatar" />
+            <div v-else class="rounded-circle me-2 border d-flex align-items-center justify-content-center bg-light text-secondary" style="width: 30px; height: 30px; min-width: 30px;">
+              <UserIcon :size="16" />
+            </div>
             <div class="min-w-0">
               <div class="fw-bold text-heading text-truncate text-sm" style="font-size: 0.85rem">
                 {{ currentUser?.nama.split(',')[0] }}
@@ -257,12 +260,18 @@
                 aria-expanded="false"
                 id="profileDropdown"
               >
-                <img :src="currentUser?.profile_picture_url" class="rounded-circle border" width="38" height="38" alt="Profile" />
+                <img v-if="currentUser?.profile_picture_url" :src="currentUser?.profile_picture_url" class="rounded-circle border object-fit-cover" width="38" height="38" alt="Profile" />
+                <div v-else class="rounded-circle border d-flex align-items-center justify-content-center bg-light text-secondary" style="width: 38px; height: 38px; min-width: 38px;">
+                  <UserIcon :size="18" />
+                </div>
               </button>
               <ul class="dropdown-menu dropdown-menu-end shadow border p-2" aria-labelledby="profileDropdown">
                 <li>
                   <div class="dropdown-item d-flex align-items-center gap-2 py-2 border-bottom">
-                    <img :src="currentUser?.profile_picture_url" class="rounded-circle border" width="40" height="40" alt="Profile" />
+                    <img v-if="currentUser?.profile_picture_url" :src="currentUser?.profile_picture_url" class="rounded-circle border object-fit-cover" width="40" height="40" alt="Profile" />
+                    <div v-else class="rounded-circle border d-flex align-items-center justify-content-center bg-light text-secondary" style="width: 40px; height: 40px; min-width: 40px;">
+                      <UserIcon :size="20" />
+                    </div>
                     <div>
                       <div class="fw-bold text-heading text-sm">{{ currentUser?.nama }}</div>
                       <div class="text-muted text-xs small">{{ currentUser?.email }}</div>
@@ -337,7 +346,8 @@ import {
   Sun as SunIcon,
   Moon as MoonIcon,
   Database as DatabaseIcon,
-  Contact as ContactIcon
+  Contact as ContactIcon,
+  User as UserIcon
 } from 'lucide-vue-next';
 
 const router = useRouter();
