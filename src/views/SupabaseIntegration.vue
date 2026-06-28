@@ -260,10 +260,12 @@
                   <div class="border-top pt-2 mt-2">
                     <strong class="d-block text-warning mb-1">⚠️ Migrasi/Update Database yang Sudah Ada:</strong>
                     <span class="text-xs text-muted d-block mb-2">
-                      Jika Anda mendapatkan error saat melakukan Push Data karena perubahan struktur kelas (penghapusan kolom <code>tingkat</code> dan penambahan <code>wali_kelas_id</code>), silakan salin dan jalankan query berikut di <strong>SQL Editor Supabase</strong> Anda untuk memperbarui skema:
+                      Jika Anda mendapatkan error saat melakukan Push Data karena perubahan struktur kelas atau profil (penghapusan kolom <code>tingkat</code>, penambahan <code>wali_kelas_id</code>, <code>username</code>, dan <code>telpon</code>), silakan salin dan jalankan query berikut di <strong>SQL Editor Supabase</strong> Anda untuk memperbarui skema:
                     </span>
                     <pre class="bg-dark text-warning p-2 rounded text-xxs mb-0 font-mono" style="font-family: monospace;">ALTER TABLE public.classes DROP COLUMN IF EXISTS tingkat;
-ALTER TABLE public.classes ADD COLUMN IF NOT EXISTS wali_kelas_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL;</pre>
+ALTER TABLE public.classes ADD COLUMN IF NOT EXISTS wali_kelas_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS telpon TEXT;</pre>
                   </div>
                 </div>
               </div>

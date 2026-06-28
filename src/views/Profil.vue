@@ -63,7 +63,7 @@
             <div class="row g-3">
               <!-- Nama -->
               <div class="col-12 col-md-6">
-                <label class="form-label small fw-semibold">Nama Lengkap & Gelar</label>
+                <label class="form-label small fw-semibold">Nama Lengkap</label>
                 <input v-model="form.nama" type="text" class="form-control" required />
               </div>
 
@@ -71,18 +71,6 @@
               <div class="col-12 col-md-6">
                 <label class="form-label small fw-semibold">Username Login</label>
                 <input v-model="form.username" type="text" class="form-control" required />
-              </div>
-
-              <!-- Email -->
-              <div class="col-12 col-md-6">
-                <label class="form-label small fw-semibold">Alamat Email</label>
-                <input v-model="form.email" type="email" class="form-control" placeholder="nama@domain.com" />
-              </div>
-
-              <!-- Phone number -->
-              <div class="col-12 col-md-6">
-                <label class="form-label small fw-semibold">Nomor Telepon / WhatsApp</label>
-                <input v-model="form.telpon" type="text" class="form-control" placeholder="Contoh: 0812..." />
               </div>
 
               <!-- Password section -->

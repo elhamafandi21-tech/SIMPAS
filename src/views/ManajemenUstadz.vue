@@ -103,8 +103,8 @@
               <form @submit.prevent="saveTeacher">
                 <!-- Nama Lengkap -->
                 <div class="mb-3">
-                  <label class="form-label small fw-semibold">Nama Lengkap beserta Gelar</label>
-                  <input v-model="form.nama" type="text" class="form-control" placeholder="Contoh: Ustadz M. Syakir, S.H." required />
+                  <label class="form-label small fw-semibold">Nama Lengkap</label>
+                  <input v-model="form.nama" type="text" class="form-control" placeholder="Contoh: Ustadz M. Syakir" required />
                 </div>
 
                 <div class="row">
