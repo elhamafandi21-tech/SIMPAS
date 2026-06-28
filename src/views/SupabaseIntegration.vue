@@ -345,7 +345,7 @@ onMounted(async () => {
   }
 
   // Load auto sync toggle
-  autoSyncEnabled.value = localStorage.getItem('simpas_supabase_autosync') === 'true';
+  autoSyncEnabled.value = localStorage.getItem('simpas_supabase_autosync') !== 'false';
 });
 
 const verifyConnection = async () => {

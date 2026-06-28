@@ -42,23 +42,6 @@
             </div>
           </div>
 
-          <!-- Quick Fill for demo ease -->
-          <div class="mb-3 p-2 bg-light rounded border border-dashed text-center">
-            <div class="small text-muted mb-1 fw-bold">Akun Demo Cepat:</div>
-            <div class="d-flex flex-wrap gap-1 justify-content-center">
-              <button 
-                v-for="p in demoUsers" 
-                :key="p.id"
-                type="button"
-                class="btn btn-xs btn-outline-primary py-0 px-2 text-xs"
-                style="font-size: 0.75rem"
-                @click="fillDemo(p)"
-              >
-                {{ p.nama.split(' ')[0] }} ({{ p.role }})
-              </button>
-            </div>
-          </div>
-
           <!-- Username / Name Input -->
           <div class="mb-3">
             <label class="form-label" for="username-input">
@@ -156,9 +139,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { db, Profile } from '../database';
+import { db } from '../database';
 import { saveSupabaseConfig, pullSupabaseToLocal, getSupabaseConfig } from '../supabase';
 import Swal from 'sweetalert2';
 import { 
@@ -236,20 +219,6 @@ const handleSupabaseSync = async () => {
   }
 };
 
-const demoUsers = computed(() => {
-  return db.profiles;
-});
-
-const fillDemo = (user: Profile) => {
-  role.value = user.role;
-  username.value = user.username || user.nama;
-  if (user.role === 'Admin') {
-    password.value = user.password || 'password';
-  } else {
-    password.value = '';
-  }
-};
-
 const handleLogin = () => {
   loading.value = true;
   
@@ -274,7 +243,7 @@ const handleLogin = () => {
       });
     } else {
       const errorMsg = role.value === 'Ustadz' 
-        ? 'Nama lengkap atau username Ustadz tidak terdaftar. Silakan periksa kembali atau gunakan pilihan Akun Demo Cepat.'
+        ? 'Nama lengkap atau username Ustadz tidak terdaftar. Silakan periksa kembali.'
         : 'Nama pengguna admin tidak cocok atau kata sandi salah. Silakan coba kembali.';
       
       Swal.fire({

@@ -1,4 +1,5 @@
 // Database Simpas with LocalStorage persistence and authentic data structure
+import { reactive } from 'vue';
 
 export interface Profile {
   id: string;
@@ -235,7 +236,8 @@ export class SimpasDatabase {
     saveToLocalStorage('session', this.session);
 
     // Background auto-sync if enabled (uses dynamic import to prevent circular dependency)
-    if (localStorage.getItem('simpas_supabase_autosync') === 'true') {
+    const isAutoSync = localStorage.getItem('simpas_supabase_autosync') !== 'false';
+    if (isAutoSync) {
       import('./supabase').then(({ getSupabaseClient }) => {
         const client = getSupabaseClient();
         if (client) {
@@ -572,4 +574,4 @@ export class SimpasDatabase {
   }
 }
 
-export const db = new SimpasDatabase();
+export const db = reactive(new SimpasDatabase());
