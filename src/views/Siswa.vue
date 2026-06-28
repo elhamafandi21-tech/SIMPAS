@@ -8,6 +8,9 @@
           <p class="text-muted mb-0">Kelola biodata santri terdaftar Madrasah Diniyyah Pancasila Salatiga.</p>
         </div>
         <div class="d-flex gap-2">
+          <button @click="openPromotionModal" class="btn btn-outline-warning d-flex align-items-center gap-2">
+            <TrendingUpIcon :size="18" /> Kenaikan Kelas
+          </button>
           <button @click="openBulkModal" class="btn btn-outline-primary d-flex align-items-center gap-2">
             <UploadIcon :size="18" /> Impor Massal
           </button>
@@ -53,6 +56,9 @@
       <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
         <h5 class="mb-0">Daftar Santri Aktif</h5>
         <div class="d-flex align-items-center gap-2">
+          <button v-if="selectedStudentIds.length > 0" @click="openPromotionModalForSelected" class="btn btn-sm btn-warning text-white d-flex align-items-center gap-2 px-3">
+            <TrendingUpIcon :size="14" /> Naikkan Kelas ({{ selectedStudentIds.length }})
+          </button>
           <button v-if="selectedStudentIds.length > 0" @click="deleteSelectedStudents" class="btn btn-sm btn-danger d-flex align-items-center gap-2 px-3">
             <TrashIcon :size="14" /> Hapus Terpilih ({{ selectedStudentIds.length }})
           </button>
@@ -253,6 +259,152 @@
         </div>
       </div>
     </div>
+
+    <!-- Promotion Modal -->
+    <div v-if="showPromotionModal" class="modal-backdrop">
+      <div class="modal d-block" tabindex="-1" role="dialog" style="background: rgba(0,0,0,0.5)">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+          <div class="modal-content card shadow-lg border-0">
+            <div class="modal-header border-bottom py-3">
+              <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                <TrendingUpIcon class="text-warning" :size="22" /> Sistem Kenaikan Kelas
+              </h5>
+              <button type="button" class="btn-close" @click="showPromotionModal = false"></button>
+            </div>
+            <div class="modal-body p-4">
+              <!-- Tabs -->
+              <ul class="nav nav-pills mb-4 gap-2 border-bottom pb-2">
+                <li class="nav-item">
+                  <button 
+                    type="button" 
+                    class="nav-link text-xs py-2 px-3" 
+                    :class="{ active: promotionType === 'selected' }"
+                    @click="promotionType = 'selected'"
+                  >
+                    Opsi 1: Naikkan Santri Terpilih ({{ selectedStudentIds.length }})
+                  </button>
+                </li>
+                <li class="nav-item">
+                  <button 
+                    type="button" 
+                    class="nav-link text-xs py-2 px-3" 
+                    :class="{ active: promotionType === 'massal' }"
+                    @click="promotionType = 'massal'"
+                  >
+                    Opsi 2: Kenaikan Kelas Massal (Satu Rombel)
+                  </button>
+                </li>
+              </ul>
+
+              <!-- Content Tab 1: Selected Students -->
+              <div v-if="promotionType === 'selected'">
+                <div v-if="selectedStudentIds.length === 0" class="alert alert-warning py-2 mb-3 text-xs">
+                  <strong>Peringatan!</strong> Silakan centang nama santri di tabel utama terlebih dahulu untuk menggunakan opsi ini.
+                </div>
+                <div v-else class="mb-4">
+                  <p class="text-muted text-xs mb-2">
+                    Anda akan memproses kenaikan kelas untuk <strong>{{ selectedStudentIds.length }} santri</strong> berikut:
+                  </p>
+                  <div class="border rounded p-2 bg-light mb-3" style="max-height: 120px; overflow-y: auto;">
+                    <span 
+                      v-for="id in selectedStudentIds" 
+                      :key="id" 
+                      class="badge bg-secondary m-1 text-xs text-white"
+                    >
+                      {{ getStudentName(id) }} ({{ getClassName(getStudentClassId(id)) }})
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Content Tab 2: Massal Promotion -->
+              <div v-if="promotionType === 'massal'" class="mb-4">
+                <div class="row g-3 mb-3">
+                  <div class="col-md-6">
+                    <label class="form-label small fw-semibold">Pilih Kelas Asal</label>
+                    <select v-model="selectedSourceClass" @change="updateMassalStudents" class="form-select">
+                      <option value="">-- Pilih Kelas Asal --</option>
+                      <option v-for="cls in classes" :key="cls.id" :value="cls.id">
+                        {{ cls.nama }} ({{ cls.tahun_ajaran }})
+                      </option>
+                    </select>
+                  </div>
+                  <div class="col-md-6 d-flex align-items-end">
+                    <div class="text-xs text-muted mb-2">
+                      Pilih kelas yang ingin dinaikkan seluruh/sebagian siswanya.
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Massal Students Checklist -->
+                <div v-if="selectedSourceClass">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <label class="form-label small fw-semibold mb-0">Daftar Santri Kelas Asal</label>
+                    <div class="d-flex gap-2">
+                      <button type="button" @click="toggleAllMassalSelection(true)" class="btn btn-xs btn-outline-secondary py-0 px-2 text-xs">Pilih Semua</button>
+                      <button type="button" @click="toggleAllMassalSelection(false)" class="btn btn-xs btn-outline-secondary py-0 px-2 text-xs">Batalkan Semua</button>
+                    </div>
+                  </div>
+
+                  <div class="border rounded bg-light p-3" style="max-height: 200px; overflow-y: auto;">
+                    <div v-if="massalStudentSelections.length === 0" class="text-center text-muted text-xs py-3">
+                      Tidak ada santri aktif di kelas ini.
+                    </div>
+                    <div v-else class="row g-2">
+                      <div v-for="std in massalStudentSelections" :key="std.id" class="col-md-6">
+                        <div class="form-check text-xs">
+                          <input 
+                            type="checkbox" 
+                            class="form-check-input cursor-pointer" 
+                            :id="'massal-std-' + std.id" 
+                            v-model="std.selected" 
+                          />
+                          <label class="form-check-label cursor-pointer fw-semibold text-heading" :for="'massal-std-' + std.id">
+                            {{ std.nis }} - {{ std.nama }}
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Shared target class fields -->
+              <div class="row g-3 border-top pt-4 mt-2">
+                <div class="col-md-6">
+                  <label class="form-label small fw-semibold">Pilih Kelas Tujuan (Kenaikan Kelas)</label>
+                  <select v-model="targetClassId" class="form-select" required>
+                    <option value="">-- Pilih Kelas Tujuan --</option>
+                    <option v-for="cls in classes" :key="cls.id" :value="cls.id" :disabled="cls.id === selectedSourceClass">
+                      {{ cls.nama }} ({{ cls.tahun_ajaran }}) {{ cls.id === selectedSourceClass ? '[Kelas Asal]' : '' }}
+                    </option>
+                  </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-center">
+                  <div class="text-xs text-muted pt-3">
+                    <span class="text-danger fw-semibold">* Catatan:</span> Riwayat nilai lama santri tetap aman di kelas lamanya. Setelah kenaikan, guru di kelas baru dapat langsung menginput absen & nilai baru.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit / Action Footer -->
+              <div class="d-flex justify-content-end gap-2 pt-3 border-top mt-4">
+                <button type="button" class="btn btn-outline-secondary" @click="showPromotionModal = false">Batal</button>
+                <button 
+                  type="button" 
+                  @click="processPromotion" 
+                  class="btn btn-warning text-white" 
+                  :disabled="!targetClassId || (promotionType === 'selected' && selectedStudentIds.length === 0) || (promotionType === 'massal' && getSelectedMassalCount() === 0)"
+                >
+                  Proses Kenaikan Kelas
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -260,7 +412,7 @@
 import { ref, computed } from 'vue';
 import { db, Student } from '../database';
 import Swal from 'sweetalert2';
-import { Plus as PlusIcon, Edit as EditIcon, Trash as TrashIcon, Search as SearchIcon, Upload as UploadIcon } from 'lucide-vue-next';
+import { Plus as PlusIcon, Edit as EditIcon, Trash as TrashIcon, Search as SearchIcon, Upload as UploadIcon, TrendingUp as TrendingUpIcon } from 'lucide-vue-next';
 
 const showModal = ref(false);
 const isEditMode = ref(false);
@@ -305,6 +457,13 @@ const quickClassForm = ref({
   wali_kelas_id: '',
   tahun_ajaran: '2025/2026'
 });
+
+// Promotion system states
+const showPromotionModal = ref(false);
+const promotionType = ref<'selected' | 'massal'>('selected');
+const selectedSourceClass = ref('');
+const targetClassId = ref('');
+const massalStudentSelections = ref<{ id: string; nama: string; nis: string; selected: boolean }[]>([]);
 
 // Filters states
 const searchQuery = ref('');
@@ -562,6 +721,102 @@ const saveQuickClass = () => {
     title: 'Kelas Berhasil Ditambahkan',
     text: `Kelas "${newClass.nama}" telah aktif dan otomatis terpilih.`,
     confirmButtonColor: '#696cff'
+  });
+};
+
+// Promotion system handlers
+const getStudentName = (id: string) => {
+  return db.students.find(s => s.id === id)?.nama || 'Santri';
+};
+
+const getStudentClassId = (id: string) => {
+  return db.students.find(s => s.id === id)?.kelas_id || '';
+};
+
+const openPromotionModal = () => {
+  if (selectedStudentIds.value.length > 0) {
+    promotionType.value = 'selected';
+  } else {
+    promotionType.value = 'massal';
+  }
+  selectedSourceClass.value = selectedClass.value !== 'all' ? selectedClass.value : '';
+  updateMassalStudents();
+  targetClassId.value = '';
+  showPromotionModal.value = true;
+};
+
+const openPromotionModalForSelected = () => {
+  promotionType.value = 'selected';
+  targetClassId.value = '';
+  showPromotionModal.value = true;
+};
+
+const updateMassalStudents = () => {
+  if (!selectedSourceClass.value) {
+    massalStudentSelections.value = [];
+    return;
+  }
+  const studentsInClass = db.students.filter(s => s.kelas_id === selectedSourceClass.value);
+  massalStudentSelections.value = studentsInClass.map(s => ({
+    id: s.id,
+    nama: s.nama,
+    nis: s.nis,
+    selected: true
+  }));
+};
+
+const toggleAllMassalSelection = (val: boolean) => {
+  massalStudentSelections.value.forEach(s => s.selected = val);
+};
+
+const getSelectedMassalCount = () => {
+  return massalStudentSelections.value.filter(s => s.selected).length;
+};
+
+const processPromotion = () => {
+  let idsToPromote: string[] = [];
+
+  if (promotionType.value === 'selected') {
+    idsToPromote = [...selectedStudentIds.value];
+  } else {
+    idsToPromote = massalStudentSelections.value.filter(s => s.selected).map(s => s.id);
+  }
+
+  if (idsToPromote.length === 0) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'Pilih Santri',
+      text: 'Tidak ada santri yang terpilih untuk proses kenaikan kelas.',
+      confirmButtonColor: '#ffc107'
+    });
+    return;
+  }
+
+  const targetClass = db.classes.find(c => c.id === targetClassId.value);
+  const targetClassName = targetClass ? targetClass.nama : 'Kelas Tujuan';
+
+  Swal.fire({
+    title: 'Konfirmasi Kenaikan Kelas',
+    text: `Apakah Anda yakin ingin memproses kenaikan kelas untuk ${idsToPromote.length} santri ini ke "${targetClassName}"?`,
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#ff3e1d',
+    cancelButtonColor: '#8592a3',
+    confirmButtonText: 'Ya, Naikkan Kelas',
+    cancelButtonText: 'Batal'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      db.promoteStudents(idsToPromote, targetClassId.value);
+      selectedStudentIds.value = [];
+      showPromotionModal.value = false;
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Kenaikan Kelas Berhasil!',
+        text: `${idsToPromote.length} santri telah berhasil dipindahkan ke kelas "${targetClassName}".`,
+        confirmButtonColor: '#696cff'
+      });
+    }
   });
 };
 </script>

@@ -473,6 +473,15 @@ export class SimpasDatabase {
     this.saveAll();
   }
 
+  promoteStudents(studentIds: string[], targetClassId: string) {
+    this.students.forEach(s => {
+      if (studentIds.includes(s.id)) {
+        s.kelas_id = targetClassId;
+      }
+    });
+    this.saveAll();
+  }
+
   // CRUD Grades
   saveGrade(grade: Omit<Grade, 'id' | 'final_score' | 'predikat'>) {
     const final_score = Math.round((grade.tamrin_score * 0.4) + (grade.semester_score * 0.6));
