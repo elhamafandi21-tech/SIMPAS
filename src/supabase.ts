@@ -497,3 +497,41 @@ export async function autoSyncWithSupabase(tableName: string, data: any): Promis
     console.warn(`Failed auto-sync for table ${tableName}:`, err);
   }
 }
+
+// Clear all data from Supabase tables
+export async function clearSupabaseAllData(): Promise<{ success: boolean; message: string }> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { success: false, message: 'Supabase client is not configured.' };
+  }
+
+  try {
+    const tables = [
+      'nadhoman_setorans',
+      'teaching_journals',
+      'syllabus_targets',
+      'grades',
+      'attendance',
+      'students',
+      'classes',
+      'subjects',
+      'profiles'
+    ];
+
+    for (const table of tables) {
+      const { error } = await client.from(table).delete().neq('id', '_non_existent_id_');
+      if (error) {
+        throw new Error(`Gagal mengosongkan tabel ${table}: ${error.message}`);
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Semua data di database Supabase berhasil dihapus.'
+    };
+  } catch (error: any) {
+    console.error('Error clearing Supabase data:', error);
+    return { success: false, message: error.message || 'Terjadi kesalahan saat menghapus data.' };
+  }
+}
+

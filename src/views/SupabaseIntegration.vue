@@ -174,7 +174,7 @@
 
                 <div class="row g-3">
                   <!-- Push Data Card -->
-                  <div class="col-12 col-md-6">
+                  <div class="col-12 col-md-4">
                     <div class="border rounded p-3 h-full d-flex flex-column justify-content-between">
                       <div>
                         <div class="d-flex align-items-center gap-2 text-primary fw-bold mb-2">
@@ -196,7 +196,7 @@
                   </div>
 
                   <!-- Pull Data Card -->
-                  <div class="col-12 col-md-6">
+                  <div class="col-12 col-md-4">
                     <div class="border rounded p-3 h-full d-flex flex-column justify-content-between">
                       <div>
                         <div class="d-flex align-items-center gap-2 text-success fw-bold mb-2">
@@ -213,6 +213,28 @@
                       >
                         <span v-if="syncing" class="spinner-border spinner-border-sm"></span>
                         <span v-else><DownloadCloudIcon :size="16" /> Jalankan Pull Data</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Clear Cloud Data Card -->
+                  <div class="col-12 col-md-4">
+                    <div class="border rounded p-3 h-full d-flex flex-column justify-content-between border-danger bg-light-secondary">
+                      <div>
+                        <div class="d-flex align-items-center gap-2 text-danger fw-bold mb-2">
+                          <TrashIcon :size="20" /> Hapus Semua Data Cloud
+                        </div>
+                        <p class="text-muted text-xs mb-3">
+                          Hapus permanen seluruh data yang ada di database Supabase Cloud agar Anda dapat melakukan impor ulang data yang bersih.
+                        </p>
+                      </div>
+                      <button 
+                        @click="handleClearCloudData" 
+                        class="btn btn-outline-danger w-full py-2 d-flex align-items-center justify-content-center gap-2"
+                        :disabled="connectionStatus !== 'connected' || syncing"
+                      >
+                        <span v-if="syncing" class="spinner-border spinner-border-sm"></span>
+                        <span v-else><TrashIcon :size="16" /> Bersihkan Supabase</span>
                       </button>
                     </div>
                   </div>
@@ -287,6 +309,7 @@ import {
   getSupabaseClient,
   pushLocalToSupabase,
   pullSupabaseToLocal,
+  clearSupabaseAllData,
   SUPABASE_SQL_SCHEMA
 } from '../supabase';
 import Swal from 'sweetalert2';
@@ -590,6 +613,51 @@ const handlePull = () => {
           icon: 'error',
           title: 'Gagal Pull Data',
           html: `Terjadi kesalahan saat memuat data cloud:<br><span class="text-danger small">${result.message}</span>`,
+          confirmButtonColor: '#ff3e1d'
+        });
+      }
+    }
+  });
+};
+
+const handleClearCloudData = () => {
+  Swal.fire({
+    title: 'Hapus Semua Data Cloud?',
+    text: 'Aksi ini akan MENGHAPUS secara PERMANEN seluruh data yang ada di database Supabase Cloud Anda. Langkah ini berguna sebelum Anda melakukan impor ulang data dari awal. Lanjutkan?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Hapus Semua',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#ff3e1d',
+    cancelButtonColor: '#8592a3'
+  }).then(async (res) => {
+    if (res.isConfirmed) {
+      Swal.fire({
+        title: 'Menghapus Data Cloud...',
+        html: 'Menghapus seluruh baris tabel di Supabase. Mohon jangan menutup halaman ini...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      syncing.value = true;
+      const result = await clearSupabaseAllData();
+      syncing.value = false;
+      Swal.close();
+
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Data Berhasil Dihapus!',
+          text: 'Database Supabase Cloud sekarang dalam keadaan kosong dan siap untuk diimpor ulang.',
+          confirmButtonColor: '#696cff'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Menghapus Data',
+          html: `Terjadi kendala saat membersihkan data:<br><span class="text-danger small">${result.message}</span>`,
           confirmButtonColor: '#ff3e1d'
         });
       }
