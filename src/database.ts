@@ -288,6 +288,32 @@ export class SimpasDatabase {
     }
   }
 
+  syncDelete(tableName: string, idOrIds: string | string[]) {
+    const isAutoSync = localStorage.getItem('simpas_supabase_autosync') !== 'false';
+    if (isAutoSync) {
+      import('./supabase').then(({ getSupabaseClient }) => {
+        const client = getSupabaseClient();
+        if (client) {
+          const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
+          if (ids.length > 0) {
+            (async () => {
+              try {
+                const { error } = await client.from(tableName).delete().in('id', ids);
+                if (error) {
+                  console.warn(`Failed to auto-delete from Supabase table ${tableName}:`, error.message);
+                } else {
+                  console.log(`Auto-deleted ${ids.length} items from Supabase table ${tableName}`);
+                }
+              } catch (err: any) {
+                console.warn(`Exception during auto-delete from Supabase table ${tableName}:`, err);
+              }
+            })();
+          }
+        }
+      }).catch(err => console.error('Failed to dynamic import supabase for syncDelete:', err));
+    }
+  }
+
   // Auth operations
   login(nama: string, role: 'Ustadz' | 'Admin', password?: string, remember: boolean = false): Profile | null {
     const inputClean = nama.trim().toLowerCase();
@@ -381,6 +407,11 @@ export class SimpasDatabase {
   }
 
   deleteProfile(id: string) {
+    const targetIds = this.syllabusTargets.filter(t => t.ustadz_id === id).map(t => t.id);
+    const journalIds = this.teachingJournals.filter(j => j.ustadz_id === id).map(j => j.id);
+    const setoranIds = this.nadhomanSetorans.filter(n => n.ustadz_id === id).map(n => n.id);
+    const attendanceIds = this.attendance.filter(a => a.person_id === id && a.role === 'Ustadz').map(a => a.id);
+
     this.profiles = this.profiles.filter(p => p.id !== id);
     // Clean up associations
     this.classes.forEach(c => {
@@ -393,6 +424,13 @@ export class SimpasDatabase {
     this.nadhomanSetorans = this.nadhomanSetorans.filter(n => n.ustadz_id !== id);
     this.attendance = this.attendance.filter(a => !(a.person_id === id && a.role === 'Ustadz'));
     this.saveAll();
+
+    // Sync deletion to Supabase
+    this.syncDelete('profiles', id);
+    this.syncDelete('syllabus_targets', targetIds);
+    this.syncDelete('teaching_journals', journalIds);
+    this.syncDelete('nadhoman_setorans', setoranIds);
+    this.syncDelete('attendance', attendanceIds);
   }
 
   // CRUD Subjects
@@ -426,12 +464,22 @@ export class SimpasDatabase {
   }
 
   deleteSubject(id: string) {
+    const targetIds = this.syllabusTargets.filter(t => t.subject_id === id).map(t => t.id);
+    const gradeIds = this.grades.filter(g => g.subject_id === id).map(g => g.id);
+    const journalIds = this.teachingJournals.filter(j => j.subject_id === id).map(j => j.id);
+
     this.subjects = this.subjects.filter(s => s.id !== id);
     // Cascade delete targets, grades, journals
     this.syllabusTargets = this.syllabusTargets.filter(t => t.subject_id !== id);
     this.grades = this.grades.filter(g => g.subject_id !== id);
     this.teachingJournals = this.teachingJournals.filter(j => j.subject_id !== id);
     this.saveAll();
+
+    // Sync deletion to Supabase
+    this.syncDelete('subjects', id);
+    this.syncDelete('syllabus_targets', targetIds);
+    this.syncDelete('grades', gradeIds);
+    this.syncDelete('teaching_journals', journalIds);
   }
 
   // CRUD Classes
@@ -453,6 +501,13 @@ export class SimpasDatabase {
   }
 
   deleteClass(id: string) {
+    const studentIds = this.students.filter(s => s.kelas_id === id).map(s => s.id);
+    const gradeIds = this.grades.filter(g => g.kelas_id === id).map(g => g.id);
+    const journalIds = this.teachingJournals.filter(j => j.class_id === id).map(j => j.id);
+    const targetIds = this.syllabusTargets.filter(t => t.class_id === id).map(t => t.id);
+    const setoranIds = this.nadhomanSetorans.filter(n => n.kelas_id === id).map(n => n.id);
+    const attendanceIds = this.attendance.filter(a => a.kelas_id === id || (studentIds.includes(a.person_id) && a.role === 'Santri')).map(a => a.id);
+
     this.classes = this.classes.filter(c => c.id !== id);
     // Cascade delete students, grades, journals, nadhoman
     this.students = this.students.filter(s => s.kelas_id !== id);
@@ -461,6 +516,15 @@ export class SimpasDatabase {
     this.syllabusTargets = this.syllabusTargets.filter(t => t.class_id !== id);
     this.nadhomanSetorans = this.nadhomanSetorans.filter(n => n.kelas_id !== id);
     this.saveAll();
+
+    // Sync deletion to Supabase
+    this.syncDelete('classes', id);
+    this.syncDelete('students', studentIds);
+    this.syncDelete('grades', gradeIds);
+    this.syncDelete('teaching_journals', journalIds);
+    this.syncDelete('syllabus_targets', targetIds);
+    this.syncDelete('nadhoman_setorans', setoranIds);
+    this.syncDelete('attendance', attendanceIds);
   }
 
   // CRUD Students
@@ -494,21 +558,41 @@ export class SimpasDatabase {
   }
 
   deleteStudent(id: string) {
+    const gradeIds = this.grades.filter(g => g.student_id === id).map(g => g.id);
+    const attendanceIds = this.attendance.filter(a => a.person_id === id && a.role === 'Santri').map(a => a.id);
+    const setoranIds = this.nadhomanSetorans.filter(n => n.student_id === id).map(n => n.id);
+
     this.students = this.students.filter(s => s.id !== id);
     // Cascade delete grades, attendance, nadhoman
     this.grades = this.grades.filter(g => g.student_id !== id);
     this.attendance = this.attendance.filter(a => a.person_id !== id && a.role === 'Santri');
     this.nadhomanSetorans = this.nadhomanSetorans.filter(n => n.student_id !== id);
     this.saveAll();
+
+    // Sync deletion to Supabase
+    this.syncDelete('students', id);
+    this.syncDelete('grades', gradeIds);
+    this.syncDelete('attendance', attendanceIds);
+    this.syncDelete('nadhoman_setorans', setoranIds);
   }
 
   deleteStudents(ids: string[]) {
+    const gradeIds = this.grades.filter(g => ids.includes(g.student_id)).map(g => g.id);
+    const attendanceIds = this.attendance.filter(a => ids.includes(a.person_id) && a.role === 'Santri').map(a => a.id);
+    const setoranIds = this.nadhomanSetorans.filter(n => ids.includes(n.student_id)).map(n => n.id);
+
     this.students = this.students.filter(s => !ids.includes(s.id));
     // Cascade delete grades, attendance, nadhoman
     this.grades = this.grades.filter(g => !ids.includes(g.student_id));
     this.attendance = this.attendance.filter(a => !(ids.includes(a.person_id) && a.role === 'Santri'));
     this.nadhomanSetorans = this.nadhomanSetorans.filter(n => !ids.includes(n.student_id));
     this.saveAll();
+
+    // Sync deletion to Supabase
+    this.syncDelete('students', ids);
+    this.syncDelete('grades', gradeIds);
+    this.syncDelete('attendance', attendanceIds);
+    this.syncDelete('nadhoman_setorans', setoranIds);
   }
 
   promoteStudents(studentIds: string[], targetClassId: string) {
