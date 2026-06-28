@@ -210,6 +210,17 @@ DROP POLICY IF EXISTS "Allow all actions for everyone" ON public.nadhoman_setora
 CREATE POLICY "Allow all actions for everyone" ON public.nadhoman_setorans FOR ALL USING (true) WITH CHECK (true);
 `;
 
+// Helper: Deduplicate array of objects by id
+function deduplicateById<T extends { id: any }>(arr: T[]): T[] {
+  const map = new Map<string, T>();
+  for (const item of arr) {
+    if (item && item.id !== undefined && item.id !== null) {
+      map.set(String(item.id), item);
+    }
+  }
+  return Array.from(map.values());
+}
+
 // Helper: Push all local data tables to Supabase
 export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: boolean; message: string; counts?: any }> {
   const client = getSupabaseClient();
@@ -232,7 +243,8 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
 
     // 1. Profiles
     if (dbInstance.profiles.length > 0) {
-      const formattedProfiles = dbInstance.profiles.map((p: any) => ({
+      const uniqueProfiles = deduplicateById(dbInstance.profiles);
+      const formattedProfiles = uniqueProfiles.map((p: any) => ({
         id: p.id,
         nama: p.nama,
         email: p.email || null,
@@ -245,19 +257,21 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
       }));
       const { error } = await client.from('profiles').upsert(formattedProfiles);
       if (error) throw new Error(`Profiles Sync Failed: ${error.message}`);
-      results.profiles = dbInstance.profiles.length;
+      results.profiles = uniqueProfiles.length;
     }
 
     // 2. Subjects
     if (dbInstance.subjects.length > 0) {
-      const { error } = await client.from('subjects').upsert(dbInstance.subjects);
+      const uniqueSubjects = deduplicateById(dbInstance.subjects);
+      const { error } = await client.from('subjects').upsert(uniqueSubjects);
       if (error) throw new Error(`Subjects Sync Failed: ${error.message}`);
-      results.subjects = dbInstance.subjects.length;
+      results.subjects = uniqueSubjects.length;
     }
 
     // 3. Classes
     if (dbInstance.classes.length > 0) {
-      const formattedClasses = dbInstance.classes.map((c: any) => ({
+      const uniqueClasses = deduplicateById(dbInstance.classes);
+      const formattedClasses = uniqueClasses.map((c: any) => ({
         id: c.id,
         nama: c.nama,
         tahun_ajaran: c.tahun_ajaran,
@@ -265,33 +279,37 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
       }));
       const { error } = await client.from('classes').upsert(formattedClasses);
       if (error) throw new Error(`Classes Sync Failed: ${error.message}`);
-      results.classes = dbInstance.classes.length;
+      results.classes = uniqueClasses.length;
     }
 
     // 4. Students
     if (dbInstance.students.length > 0) {
-      const { error } = await client.from('students').upsert(dbInstance.students);
+      const uniqueStudents = deduplicateById(dbInstance.students);
+      const { error } = await client.from('students').upsert(uniqueStudents);
       if (error) throw new Error(`Students Sync Failed: ${error.message}`);
-      results.students = dbInstance.students.length;
+      results.students = uniqueStudents.length;
     }
 
     // 5. Grades
     if (dbInstance.grades.length > 0) {
-      const { error } = await client.from('grades').upsert(dbInstance.grades);
+      const uniqueGrades = deduplicateById(dbInstance.grades);
+      const { error } = await client.from('grades').upsert(uniqueGrades);
       if (error) throw new Error(`Grades Sync Failed: ${error.message}`);
-      results.grades = dbInstance.grades.length;
+      results.grades = uniqueGrades.length;
     }
 
     // 6. Attendance
     if (dbInstance.attendance.length > 0) {
-      const { error } = await client.from('attendance').upsert(dbInstance.attendance);
+      const uniqueAttendance = deduplicateById(dbInstance.attendance);
+      const { error } = await client.from('attendance').upsert(uniqueAttendance);
       if (error) throw new Error(`Attendance Sync Failed: ${error.message}`);
-      results.attendance = dbInstance.attendance.length;
+      results.attendance = uniqueAttendance.length;
     }
 
     // 7. Syllabus Targets
     if (dbInstance.syllabusTargets.length > 0) {
-      const formattedTargets = dbInstance.syllabusTargets.map((t: any) => ({
+      const uniqueTargets = deduplicateById(dbInstance.syllabusTargets);
+      const formattedTargets = uniqueTargets.map((t: any) => ({
         id: t.id,
         subject_id: t.subject_id,
         class_id: t.class_id,
@@ -300,12 +318,13 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
       }));
       const { error } = await client.from('syllabus_targets').upsert(formattedTargets);
       if (error) throw new Error(`Syllabus Targets Sync Failed: ${error.message}`);
-      results.syllabus_targets = dbInstance.syllabusTargets.length;
+      results.syllabus_targets = uniqueTargets.length;
     }
 
     // 8. Teaching Journals
     if (dbInstance.teachingJournals.length > 0) {
-      const formattedJournals = dbInstance.teachingJournals.map((j: any) => ({
+      const uniqueJournals = deduplicateById(dbInstance.teachingJournals);
+      const formattedJournals = uniqueJournals.map((j: any) => ({
         id: j.id,
         date: j.date,
         ustadz_id: j.ustadz_id,
@@ -317,14 +336,15 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
       }));
       const { error } = await client.from('teaching_journals').upsert(formattedJournals);
       if (error) throw new Error(`Teaching Journals Sync Failed: ${error.message}`);
-      results.teaching_journals = dbInstance.teachingJournals.length;
+      results.teaching_journals = uniqueJournals.length;
     }
 
     // 9. Nadhoman Setorans
     if (dbInstance.nadhomanSetorans.length > 0) {
-      const { error } = await client.from('nadhoman_setorans').upsert(dbInstance.nadhomanSetorans);
+      const uniqueNadhomanSetorans = deduplicateById(dbInstance.nadhomanSetorans);
+      const { error } = await client.from('nadhoman_setorans').upsert(uniqueNadhomanSetorans);
       if (error) throw new Error(`Nadhoman Setorans Sync Failed: ${error.message}`);
-      results.nadhoman_setorans = dbInstance.nadhomanSetorans.length;
+      results.nadhoman_setorans = uniqueNadhomanSetorans.length;
     }
 
     return {
