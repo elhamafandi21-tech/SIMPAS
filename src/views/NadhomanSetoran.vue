@@ -135,7 +135,15 @@ const classes = computed(() => db.classes);
 
 const students = computed(() => {
   if (!selectedClass.value) return [];
-  return db.students.filter(s => s.kelas_id === selectedClass.value);
+  const list = db.students.filter(s => s.kelas_id === selectedClass.value);
+  return list.sort((a, b) => {
+    const numA = parseInt(a.nis.replace(/[^0-9]/g, ''), 10);
+    const numB = parseInt(b.nis.replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB;
+    }
+    return a.nis.localeCompare(b.nis, undefined, { numeric: true, sensitivity: 'base' });
+  });
 });
 
 // Today's sector records

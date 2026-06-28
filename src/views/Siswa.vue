@@ -472,7 +472,7 @@ const selectedClass = ref('all');
 const classes = computed(() => db.classes);
 
 const filteredStudents = computed(() => {
-  return db.students.filter(std => {
+  const list = db.students.filter(std => {
     // Search query filter
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase();
@@ -485,6 +485,15 @@ const filteredStudents = computed(() => {
       return false;
     }
     return true;
+  });
+
+  return list.sort((a, b) => {
+    const numA = parseInt(a.nis.replace(/[^0-9]/g, ''), 10);
+    const numB = parseInt(b.nis.replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB;
+    }
+    return a.nis.localeCompare(b.nis, undefined, { numeric: true, sensitivity: 'base' });
   });
 });
 

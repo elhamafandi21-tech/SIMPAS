@@ -405,8 +405,31 @@ const processFile = (file: File) => {
         throw new Error('Berkas Excel kosong atau tidak terdeteksi data baris.');
       }
 
+      // Check if there is only 1 column key and it contains semicolons or other delimiters
+      let parsedData = rawJson;
+      if (rawJson.length > 0) {
+        const keys = Object.keys(rawJson[0]);
+        if (keys.length === 1 && (keys[0].includes(';') || keys[0].includes(','))) {
+          const delimiter = keys[0].includes(';') ? ';' : ',';
+          const headerFields = keys[0].split(delimiter);
+          
+          parsedData = rawJson.map((row: any) => {
+            const rawVal = row[keys[0]];
+            if (rawVal === undefined || rawVal === null) return {};
+            const valFields = String(rawVal).split(delimiter);
+            const newRow: any = {};
+            for (let j = 0; j < headerFields.length; j++) {
+              const h = headerFields[j].trim();
+              const v = valFields[j] !== undefined ? valFields[j].trim() : '';
+              newRow[h] = v;
+            }
+            return newRow;
+          });
+        }
+      }
+
       // Convert rows to Simpas specific data models
-      parsedRows.value = rawJson.map((row: any) => {
+      parsedRows.value = parsedData.map((row: any) => {
         const normalized = normalizeKeys(row);
         
         if (activeTab.value === 'siswa') {
@@ -513,37 +536,160 @@ const processFile = (file: File) => {
 const normalizeKeys = (row: any): any => {
   const norm: any = {};
   for (const key of Object.keys(row)) {
-    const k = key.toLowerCase().trim().replace(/[\s_]/g, '');
+    const cleanKey = key.toLowerCase().replace(/[^a-z0-9]/g, '');
     const val = row[key];
     
-    if (k.includes('kode') || k.includes('code') || k === 'id') {
+    // Check match for kode/id
+    if (
+      cleanKey === 'kode' || 
+      cleanKey === 'code' || 
+      cleanKey === 'id' || 
+      cleanKey.includes('kodekitab') || 
+      cleanKey.includes('kodemapel') || 
+      cleanKey.includes('kodepelajaran') ||
+      cleanKey.includes('idkitab') ||
+      cleanKey.includes('idsubject')
+    ) {
       norm.kode = val;
-    } else if (k.includes('nis') || k.includes('noinduk') || k.includes('nomorinduk') || k.includes('nomorurutsantri') || k.includes('nomorurut') || k.includes('nourut') || k === 'no' || k === 'no.') {
-      norm.nis = val;
-    } else if (k === 'nama' || k.includes('namalengkap') || k.includes('namasantri') || k.includes('namaguru') || k.includes('namakitab') || k.includes('kitab') || k.includes('mapel') || k.includes('subject') || k.includes('rujukan')) {
-      norm.nama = val;
-    } else if (k.includes('gender') || k.includes('jeniskelamin') || k === 'jk' || k.includes('sex')) {
-      norm.gender = val;
-    } else if (k.includes('kelas') || k.includes('rombel') || k.includes('ruang') || k.includes('class')) {
-      norm.kelas = val;
-    } else if (k.includes('tempatlahir') || k.includes('kota') || k.includes('lahirdi')) {
-      norm.tempat_lahir = val;
-    } else if (k.includes('tanggallahir') || k.includes('tgllahir') || k === 'lahir' || k.includes('birthday') || k.includes('dob')) {
-      norm.tanggal_lahir = val;
-    } else if (k.includes('hportu') || k.includes('nohp') || k === 'hp' || k.includes('telepon') || k.includes('telpon') || k.includes('phone') || k.includes('contact') || k.includes('kontak')) {
-      norm.hp_ortu = val;
-    } else if (k.includes('alamat') || k.includes('rumah') || k.includes('address')) {
-      norm.alamat = val;
-    } else if (k.includes('username') || k.includes('user') || k.includes('pengguna') || k.includes('login')) {
-      norm.username = val;
-    } else if (k.includes('email') || k.includes('surel')) {
-      norm.email = val;
-    } else if (k.includes('password') || k.includes('sandi')) {
-      norm.password = val;
-    } else {
-      // fallback as-is
-      norm[key] = val;
     }
+    
+    // Check match for nis/no
+    if (
+      cleanKey === 'nis' || 
+      cleanKey === 'nisn' || 
+      cleanKey === 'no' || 
+      cleanKey === 'noinduk' || 
+      cleanKey.includes('nomorinduk') || 
+      cleanKey.includes('nomorurutsantri') || 
+      cleanKey.includes('nomorurut') || 
+      cleanKey.includes('nourut') || 
+      cleanKey.includes('nomerurut') || 
+      cleanKey.includes('noinduksantri') ||
+      cleanKey === 'nomor' ||
+      cleanKey === 'nomer'
+    ) {
+      norm.nis = val;
+    }
+    
+    // Check match for nama
+    if (
+      cleanKey === 'nama' || 
+      cleanKey === 'namalengkap' || 
+      cleanKey.includes('namasantri') || 
+      cleanKey.includes('namasiswa') || 
+      cleanKey === 'siswa' || 
+      cleanKey === 'santri' || 
+      cleanKey.includes('namaguru') || 
+      cleanKey.includes('namaustadz') || 
+      cleanKey === 'ustadz' || 
+      cleanKey === 'guru' || 
+      cleanKey.includes('namakitab') || 
+      cleanKey === 'kitab' || 
+      cleanKey === 'mapel' || 
+      cleanKey === 'subject' || 
+      cleanKey.includes('namamapel') || 
+      cleanKey === 'pelajaran' || 
+      cleanKey.includes('matapelajaran') ||
+      cleanKey.includes('rujukan')
+    ) {
+      norm.nama = val;
+    }
+    
+    // Check match for gender
+    if (
+      cleanKey === 'gender' || 
+      cleanKey.includes('jeniskelamin') || 
+      cleanKey === 'jk' || 
+      cleanKey === 'sex' || 
+      cleanKey === 'kelamin' || 
+      cleanKey.includes('jenisk')
+    ) {
+      norm.gender = val;
+    }
+    
+    // Check match for kelas
+    if (
+      cleanKey === 'kelas' || 
+      cleanKey === 'rombel' || 
+      cleanKey === 'ruang' || 
+      cleanKey === 'class' || 
+      cleanKey.includes('kelasid') || 
+      cleanKey.includes('idkelas')
+    ) {
+      norm.kelas = val;
+    }
+    
+    // Check match for tempat_lahir
+    if (
+      cleanKey.includes('tempatlahir') || 
+      cleanKey === 'tempat' || 
+      cleanKey === 'kota' || 
+      cleanKey.includes('lahirdi')
+    ) {
+      norm.tempat_lahir = val;
+    }
+    
+    // Check match for tanggal_lahir
+    if (
+      cleanKey.includes('tanggallahir') || 
+      cleanKey.includes('tgllahir') || 
+      cleanKey === 'lahir' || 
+      cleanKey === 'birthday' || 
+      cleanKey === 'dob'
+    ) {
+      norm.tanggal_lahir = val;
+    }
+    
+    // Check match for hp_ortu or hp
+    if (
+      cleanKey.includes('hportu') || 
+      cleanKey.includes('nohportu') || 
+      cleanKey.includes('telponortu') ||
+      cleanKey.includes('nohp') || 
+      cleanKey === 'hp' || 
+      cleanKey.includes('telepon') || 
+      cleanKey.includes('telpon') || 
+      cleanKey === 'phone' || 
+      cleanKey === 'contact' || 
+      cleanKey === 'kontak'
+    ) {
+      norm.hp_ortu = val;
+      norm.hp = val;
+    }
+    
+    // Check match for alamat
+    if (
+      cleanKey === 'alamat' || 
+      cleanKey === 'rumah' || 
+      cleanKey === 'address'
+    ) {
+      norm.alamat = val;
+    }
+    
+    // Check match for username
+    if (
+      cleanKey === 'username' || 
+      cleanKey === 'user' || 
+      cleanKey === 'akun' || 
+      cleanKey === 'pengguna' || 
+      cleanKey === 'login' || 
+      cleanKey.includes('idustadz')
+    ) {
+      norm.username = val;
+    }
+    
+    // Check match for password
+    if (
+      cleanKey === 'password' || 
+      cleanKey === 'sandi' || 
+      cleanKey.includes('katasandi') || 
+      cleanKey === 'pass'
+    ) {
+      norm.password = val;
+    }
+    
+    // Keep raw attributes as fallback
+    norm[key] = val;
   }
   return norm;
 };
@@ -639,44 +785,38 @@ const saveImport = () => {
     let successCount = 0;
     
     if (activeTab.value === 'siswa') {
-      for (const item of validData) {
-        db.addStudent({
-          nis: item.nis,
-          nama: item.nama,
-          gender: item.gender,
-          kelas_id: item.kelas_id,
-          tempat_lahir: item.tempat_lahir,
-          tanggal_lahir: item.tanggal_lahir,
-          alamat: item.alamat,
-          hp_ortu: item.hp_ortu
-        });
-        successCount++;
-      }
+      const formatted = validData.map(item => ({
+        nis: String(item.nis || '').trim(),
+        nama: String(item.nama || '').trim(),
+        gender: item.gender,
+        kelas_id: item.kelas_id,
+        tempat_lahir: item.tempat_lahir,
+        tanggal_lahir: item.tanggal_lahir,
+        alamat: item.alamat,
+        hp_ortu: item.hp_ortu
+      }));
+      db.addStudentsBatch(formatted);
+      successCount = formatted.length;
     } else if (activeTab.value === 'ustadz') {
-      for (const item of validData) {
-        const id = 'prof-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4);
-        db.profiles.push({
-          id,
-          nama: item.nama,
-          username: item.username,
-          email: item.email,
-          hp: item.hp,
-          role: 'Ustadz',
-          profile_picture_url: '',
-          password: item.password || 'password'
-        });
-        successCount++;
-      }
-      db.saveAll();
+      const formatted = validData.map(item => ({
+        nama: String(item.nama || '').trim(),
+        username: String(item.username || '').trim(),
+        email: item.email || '-',
+        hp: item.hp || '-',
+        role: 'Ustadz' as const,
+        profile_picture_url: '',
+        password: item.password || 'password'
+      }));
+      db.addProfilesBatch(formatted);
+      successCount = formatted.length;
     } else {
       // Kitab
-      for (const item of validData) {
-        db.addSubject({
-          kode: item.kode,
-          nama: item.nama
-        });
-        successCount++;
-      }
+      const formatted = validData.map(item => ({
+        kode: String(item.kode || '').trim(),
+        nama: String(item.nama || '').trim()
+      }));
+      db.addSubjectsBatch(formatted);
+      successCount = formatted.length;
     }
 
     Swal.fire({

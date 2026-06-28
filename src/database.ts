@@ -340,12 +340,26 @@ export class SimpasDatabase {
     const usernameVal = profile.username || profile.nama.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 12);
     const newProfile = { 
       ...profile, 
-      id: 'prof-' + Date.now(),
+      id: 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
       username: usernameVal
     };
     this.profiles.push(newProfile);
     this.saveAll();
     return newProfile;
+  }
+
+  addProfilesBatch(profs: Omit<Profile, 'id'>[]) {
+    const timestamp = Date.now();
+    profs.forEach((prof, index) => {
+      const usernameVal = prof.username || prof.nama.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 12);
+      const newProfile = { 
+        ...prof, 
+        id: `prof-${timestamp}-${index}-${Math.random().toString(36).substring(2, 7)}`,
+        username: usernameVal
+      };
+      this.profiles.push(newProfile);
+    });
+    this.saveAll();
   }
 
   editProfile(id: string, updated: Omit<Profile, 'id'>) {
@@ -383,10 +397,22 @@ export class SimpasDatabase {
 
   // CRUD Subjects
   addSubject(sub: Omit<Subject, 'id'>) {
-    const newSub = { ...sub, id: 'sub-' + Date.now() };
+    const newSub = { ...sub, id: 'sub-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7) };
     this.subjects.push(newSub);
     this.saveAll();
     return newSub;
+  }
+
+  addSubjectsBatch(subs: Omit<Subject, 'id'>[]) {
+    const timestamp = Date.now();
+    subs.forEach((sub, index) => {
+      const newSub = { 
+        ...sub, 
+        id: `sub-${timestamp}-${index}-${Math.random().toString(36).substring(2, 7)}` 
+      };
+      this.subjects.push(newSub);
+    });
+    this.saveAll();
   }
 
   editSubject(id: string, updated: Omit<Subject, 'id'>) {
@@ -410,7 +436,7 @@ export class SimpasDatabase {
 
   // CRUD Classes
   addClass(cls: Omit<ClassRoom, 'id'>) {
-    const newCls = { ...cls, id: 'cls-' + Date.now() };
+    const newCls = { ...cls, id: 'cls-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7) };
     this.classes.push(newCls);
     this.saveAll();
     return newCls;
@@ -439,10 +465,22 @@ export class SimpasDatabase {
 
   // CRUD Students
   addStudent(std: Omit<Student, 'id'>) {
-    const newStd = { ...std, id: 'std-' + Date.now() };
+    const newStd = { ...std, id: 'std-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7) };
     this.students.push(newStd);
     this.saveAll();
     return newStd;
+  }
+
+  addStudentsBatch(stds: Omit<Student, 'id'>[]) {
+    const timestamp = Date.now();
+    stds.forEach((std, index) => {
+      const newStd = { 
+        ...std, 
+        id: `std-${timestamp}-${index}-${Math.random().toString(36).substring(2, 7)}` 
+      };
+      this.students.push(newStd);
+    });
+    this.saveAll();
   }
 
   editStudent(id: string, updated: Omit<Student, 'id'>) {
@@ -527,7 +565,7 @@ export class SimpasDatabase {
     } else {
       const newTarget: SyllabusTarget = {
         ...target,
-        id: 'syl-' + Date.now()
+        id: 'syl-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7)
       };
       this.syllabusTargets.push(newTarget);
       this.saveAll();
@@ -539,7 +577,7 @@ export class SimpasDatabase {
   addTeachingJournal(journal: Omit<TeachingJournal, 'id'>) {
     const newJournal = {
       ...journal,
-      id: 'jr-' + Date.now()
+      id: 'jr-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7)
     };
     this.teachingJournals.push(newJournal);
     this.saveAll();
@@ -575,7 +613,7 @@ export class SimpasDatabase {
   addNadhomanSetoran(setoran: Omit<NadhomanSetoran, 'id'>) {
     const newSetoran = {
       ...setoran,
-      id: 'nd-' + Date.now()
+      id: 'nd-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7)
     };
     this.nadhomanSetorans.push(newSetoran);
     this.saveAll();

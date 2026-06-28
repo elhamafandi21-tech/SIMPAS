@@ -302,8 +302,16 @@ const reportNilaiData = computed(() => {
   if (!filterNilai.value.class_id || !filterNilai.value.subject_id) return [];
   
   const classStudents = db.students.filter(s => s.kelas_id === filterNilai.value.class_id);
+  const sortedStudents = [...classStudents].sort((a, b) => {
+    const numA = parseInt(a.nis.replace(/[^0-9]/g, ''), 10);
+    const numB = parseInt(b.nis.replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(numA) && !isNaN(numB)) {
+      return numA - numB;
+    }
+    return a.nis.localeCompare(b.nis, undefined, { numeric: true, sensitivity: 'base' });
+  });
   
-  return classStudents.map(student => {
+  return sortedStudents.map(student => {
     const score = db.grades.find(g => 
       g.student_id === student.id && 
       g.subject_id === filterNilai.value.subject_id && 
