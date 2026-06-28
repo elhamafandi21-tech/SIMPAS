@@ -542,7 +542,9 @@ const normalizeKeys = (row: any): any => {
     const k = key.toLowerCase().trim().replace(/[\s_]/g, '');
     const val = row[key];
     
-    if (k.includes('nis') || k.includes('noinduk') || k.includes('nomorinduk')) {
+    if (k.includes('kode') || k.includes('code') || k === 'id') {
+      norm.kode = val;
+    } else if (k.includes('nis') || k.includes('noinduk') || k.includes('nomorinduk')) {
       norm.nis = val;
     } else if (k === 'nama' || k.includes('namalengkap') || k.includes('namasantri') || k.includes('namaguru') || k.includes('namakitab') || k.includes('kitab') || k.includes('mapel') || k.includes('subject') || k.includes('rujukan')) {
       norm.nama = val;
@@ -564,8 +566,6 @@ const normalizeKeys = (row: any): any => {
       norm.email = val;
     } else if (k.includes('password') || k.includes('sandi')) {
       norm.password = val;
-    } else if (k.includes('kode') || k.includes('code') || k === 'id') {
-      norm.kode = val;
     } else {
       // fallback as-is
       norm[k] = val;
