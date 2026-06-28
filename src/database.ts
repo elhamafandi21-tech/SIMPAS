@@ -114,12 +114,7 @@ const initialProfiles: Profile[] = [
   }
 ];
 
-const initialSubjects: Subject[] = [
-  { id: 'sub-1', kode: 'KIT-001', nama: 'Aqidatul Awam (Tauhid)' },
-  { id: 'sub-2', kode: 'KIT-002', nama: 'Al-Jurumiyah (Nahwu)' },
-  { id: 'sub-3', kode: 'KIT-003', nama: 'Safinatun Najah (Fiqih)' },
-  { id: 'sub-4', kode: 'KIT-004', nama: 'Ta\'limul Muta\'allim (Akhlaq)' }
-];
+const initialSubjects: Subject[] = [];
 
 const initialClasses: ClassRoom[] = [
   { id: 'cls-1', nama: 'Kelas 1-A', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
@@ -127,53 +122,17 @@ const initialClasses: ClassRoom[] = [
   { id: 'cls-3', nama: 'Kelas 3-B', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-2' }
 ];
 
-const initialStudents: Student[] = [
-  { id: 'std-1', nis: '25001', nama: 'M. Wildan Pratama', gender: 'Laki-laki', tempat_lahir: 'Salatiga', tanggal_lahir: '2013-05-12', alamat: 'Kecandran, Sidomukti, Salatiga', hp_ortu: '085642333111', kelas_id: 'cls-1' },
-  { id: 'std-2', nis: '25002', nama: 'Siti Aminah Zahra', gender: 'Perempuan', tempat_lahir: 'Semarang', tanggal_lahir: '2013-08-20', alamat: 'Tingkir Tengah, Salatiga', hp_ortu: '081390444555', kelas_id: 'cls-1' },
-  { id: 'std-3', nis: '25003', nama: 'Faizal Rahman', gender: 'Laki-laki', tempat_lahir: 'Salatiga', tanggal_lahir: '2012-11-03', alamat: 'Blotongan, Sidorejo, Salatiga', hp_ortu: '087834777888', kelas_id: 'cls-1' },
-  { id: 'std-4', nis: '25004', nama: 'Halimatuz Sa\'diyyah', gender: 'Perempuan', tempat_lahir: 'Boyolali', tanggal_lahir: '2013-01-15', alamat: 'Tengaran, Kab. Semarang', hp_ortu: '085725111222', kelas_id: 'cls-2' },
-  { id: 'std-5', nis: '25005', nama: 'Ahmad Ainun Najib', gender: 'Laki-laki', tempat_lahir: 'Demak', tanggal_lahir: '2012-07-22', alamat: 'Tegalrejo, Argomulyo, Salatiga', hp_ortu: '081228444999', kelas_id: 'cls-2' },
-  { id: 'std-6', nis: '25006', nama: 'Fatimatuz Zahra', gender: 'Perempuan', tempat_lahir: 'Salatiga', tanggal_lahir: '2012-12-30', alamat: 'Pulutan, Sidorejo, Salatiga', hp_ortu: '089678333555', kelas_id: 'cls-2' },
-  { id: 'std-7', nis: '25007', nama: 'Luqman Hakim', gender: 'Laki-laki', tempat_lahir: 'Magelang', tanggal_lahir: '2011-04-18', alamat: 'Getasan, Kab. Semarang', hp_ortu: '085213444000', kelas_id: 'cls-3' },
-  { id: 'std-8', nis: '25008', nama: 'Annisa Rahmawati', gender: 'Perempuan', tempat_lahir: 'Salatiga', tanggal_lahir: '2011-09-05', alamat: 'Ledok, Argomulyo, Salatiga', hp_ortu: '081335888222', kelas_id: 'cls-3' }
-];
+const initialStudents: Student[] = [];
 
-const initialSyllabusTargets: SyllabusTarget[] = [
-  { id: 'syl-1', subject_id: 'sub-1', class_id: 'cls-1', target_materi: 'Bait 1 s/d 25 (Sifat Wajib & Mustahil bagi Allah)', ustadz_id: 'prof-1' },
-  { id: 'syl-2', subject_id: 'sub-2', class_id: 'cls-2', target_materi: 'Kalam, I\'rab, dan Tanda-tanda I\'rab', ustadz_id: 'prof-1' },
-  { id: 'syl-3', subject_id: 'sub-3', class_id: 'cls-3', target_materi: 'Rukun Islam, Rukun Iman, dan Syarat Bersuci', ustadz_id: 'prof-1' }
-];
+const initialSyllabusTargets: SyllabusTarget[] = [];
 
-const initialTeachingJournals: TeachingJournal[] = [
-  { id: 'jr-1', date: '2026-06-20', ustadz_id: 'prof-1', subject_id: 'sub-1', class_id: 'cls-1', materi_diajarkan: 'Memahami Sifat Wajib Wujud, Qidam, Baqa bagi Allah SWT.', kehadiran_summary: '3/3 Santri Hadir', notes: 'Santri antusias membaca bait-bait nazhom.' },
-  { id: 'jr-2', date: '2026-06-21', ustadz_id: 'prof-1', subject_id: 'sub-2', class_id: 'cls-2', materi_diajarkan: 'Penjelasan Pengertian Kalam & Pembagian Kata', kehadiran_summary: '3/3 Santri Hadir', notes: 'Dilakukan hafalan klasikal bersama-sama.' }
-];
+const initialTeachingJournals: TeachingJournal[] = [];
 
-const initialNadhomanSetorans: NadhomanSetoran[] = [
-  { id: 'nd-1', student_id: 'std-1', kelas_id: 'cls-1', bait_awal: 1, bait_akhir: 10, date: '2026-06-22', ustadz_id: 'prof-1', notes: 'Lancar, makhrojul huruf sangat baik.' },
-  { id: 'nd-2', student_id: 'std-2', kelas_id: 'cls-1', bait_awal: 1, bait_akhir: 8, date: '2026-06-22', ustadz_id: 'prof-1', notes: 'Sedikit grogi di bait ke-5, tapi bisa melanjutkan.' },
-  { id: 'nd-3', student_id: 'std-4', kelas_id: 'cls-2', bait_awal: 1, bait_akhir: 15, date: '2026-06-23', ustadz_id: 'prof-1', notes: 'Sangat lancar.' }
-];
+const initialNadhomanSetorans: NadhomanSetoran[] = [];
 
-const initialGrades: Grade[] = [
-  { id: 'grd-1', student_id: 'std-1', subject_id: 'sub-1', kelas_id: 'cls-1', tamrin_score: 85, semester_score: 80, final_score: 82, predikat: 'B', created_by: 'prof-1', date_input: '2026-06-23' },
-  { id: 'grd-2', student_id: 'std-2', subject_id: 'sub-1', kelas_id: 'cls-1', tamrin_score: 95, semester_score: 90, final_score: 92, predikat: 'A', created_by: 'prof-1', date_input: '2026-06-23' },
-  { id: 'grd-3', student_id: 'std-3', subject_id: 'sub-1', kelas_id: 'cls-1', tamrin_score: 75, semester_score: 78, final_score: 77, predikat: 'C', created_by: 'prof-1', date_input: '2026-06-23' }
-];
+const initialGrades: Grade[] = [];
 
-const initialAttendance: Attendance[] = [
-  // Student Attendance
-  { id: 'att-1', date: '2026-06-23', role: 'Santri', person_id: 'std-1', person_name: 'M. Wildan Pratama', status: 'Hadir', kelas_id: 'cls-1' },
-  { id: 'att-2', date: '2026-06-23', role: 'Santri', person_id: 'std-2', person_name: 'Siti Aminah Zahra', status: 'Hadir', kelas_id: 'cls-1' },
-  { id: 'att-3', date: '2026-06-23', role: 'Santri', person_id: 'std-3', person_name: 'Faizal Rahman', status: 'Izin', notes: 'Ada keperluan keluarga', kelas_id: 'cls-1' },
-  { id: 'att-4', date: '2026-06-23', role: 'Santri', person_id: 'std-4', person_name: 'Halimatuz Sa\'diyyah', status: 'Hadir', kelas_id: 'cls-2' },
-  { id: 'att-5', date: '2026-06-23', role: 'Santri', person_id: 'std-5', person_name: 'Ahmad Ainun Najib', status: 'Sakit', notes: 'Demam tinggi', kelas_id: 'cls-2' },
-  { id: 'att-6', date: '2026-06-23', role: 'Santri', person_id: 'std-6', person_name: 'Fatimatuz Zahra', status: 'Hadir', kelas_id: 'cls-2' },
-  
-  // Ustadz Attendance
-  { id: 'att-u1', date: '2026-06-22', role: 'Ustadz', person_id: 'prof-1', person_name: 'Ustadz Ahmad Fauzi, S.Pd.I', status: 'Hadir' },
-  { id: 'att-u2', date: '2026-06-23', role: 'Ustadz', person_id: 'prof-1', person_name: 'Ustadz Ahmad Fauzi, S.Pd.I', status: 'Hadir' }
-];
+const initialAttendance: Attendance[] = [];
 
 // Helper functions to retrieve/store to LocalStorage
 export function loadFromLocalStorage<T>(key: string, initial: T): T {
@@ -214,6 +173,19 @@ export class SimpasDatabase {
   session: AuthSession;
 
   constructor() {
+    // One-time clear of requested items to start fresh
+    const resetFlag = localStorage.getItem('simpas_clear_seeds_v3');
+    if (!resetFlag) {
+      localStorage.removeItem('simpas_students');
+      localStorage.removeItem('simpas_subjects');
+      localStorage.removeItem('simpas_grades');
+      localStorage.removeItem('simpas_attendance');
+      localStorage.removeItem('simpas_syllabus_targets');
+      localStorage.removeItem('simpas_teaching_journals');
+      localStorage.removeItem('simpas_nadhoman_setorans');
+      localStorage.setItem('simpas_clear_seeds_v3', 'true');
+    }
+
     this.profiles = loadFromLocalStorage<Profile[]>('profiles', initialProfiles);
     
     // Ensure default profiles have usernames if they don't already
