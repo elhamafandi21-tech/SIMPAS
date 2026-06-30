@@ -79,6 +79,25 @@
             </div>
           </div>
 
+          <!-- Credential Tip Box -->
+          <div class="alert alert-info py-2.5 px-3 border-0 rounded mb-3 shadow-xs" style="background-color: rgba(105, 108, 255, 0.08); border-left: 4px solid #696cff !important;">
+            <div class="d-flex gap-2 align-items-start">
+              <InfoIcon :size="16" class="text-primary mt-0.5 flex-shrink-0" />
+              <div class="text-xs text-muted" style="font-size: 0.75rem; line-height: 1.45;">
+                <template v-if="role === 'Admin'">
+                  <span class="fw-bold text-dark d-block mb-1">Informasi Login Admin Bawaan:</span>
+                  Username: <code class="bg-white px-1.5 py-0.5 rounded text-primary fw-semibold">admin</code><br />
+                  Password: <code class="bg-white px-1.5 py-0.5 rounded text-primary fw-semibold">admin123</code>
+                </template>
+                <template v-else>
+                  <span class="fw-bold text-dark d-block mb-1">Informasi Login Ustadz Bawaan:</span>
+                  Username: <code class="bg-white px-1.5 py-0.5 rounded text-primary fw-semibold">ahmadfauzi</code><br />
+                  <span class="text-muted-60 text-xs mt-1 d-block">(Cukup masukkan nama lengkap atau username, tanpa sandi)</span>
+                </template>
+              </div>
+            </div>
+          </div>
+
           <!-- Remember Me -->
           <div class="mb-4 d-flex align-items-center">
             <input v-model="rememberMe" type="checkbox" id="remember-me" class="form-check-input me-2" />
@@ -151,7 +170,8 @@ import {
   EyeOff as EyeOffIcon,
   Database as DatabaseIcon,
   Wifi as WifiIcon,
-  RefreshCw as RefreshCwIcon
+  RefreshCw as RefreshCwIcon,
+  Info as InfoIcon
 } from 'lucide-vue-next';
 
 const router = useRouter();

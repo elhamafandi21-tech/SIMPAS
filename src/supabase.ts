@@ -524,7 +524,65 @@ export async function pullSupabaseToLocal(dbInstance: any): Promise<{ success: b
           throw new Error(`Gagal memuat profiles: ${errProf.message}`);
         }
       } else {
-        dbInstance.profiles = profilesData || [];
+        const pulled = profilesData || [];
+        if (pulled.length === 0) {
+          // If Supabase has no profiles, don't wipe local profiles, or fallback to default ones
+          console.log('Pulled empty profiles from Supabase, keeping local profiles or falling back.');
+          if (!dbInstance.profiles || dbInstance.profiles.length === 0) {
+            dbInstance.profiles = [
+              {
+                id: 'prof-1',
+                nama: 'Ustadz Ahmad Fauzi',
+                email: 'ahmadfauzi@madinpancasila.sch.id',
+                hp: '081234567890',
+                role: 'Ustadz',
+                profile_picture_url: '',
+                username: 'ahmadfauzi',
+                password: 'password'
+              },
+              {
+                id: 'prof-2',
+                nama: 'Administrator Madin',
+                email: 'admin@madinpancasila.sch.id',
+                hp: '089876543210',
+                role: 'Admin',
+                profile_picture_url: '',
+                username: 'admin',
+                password: 'admin123'
+              }
+            ];
+          }
+        } else {
+          dbInstance.profiles = pulled;
+          // Ensure we have at least one Admin profile so user is not locked out
+          const hasAdmin = dbInstance.profiles.some((p: any) => p.role === 'Admin');
+          if (!hasAdmin) {
+            dbInstance.profiles.push({
+              id: 'prof-2',
+              nama: 'Administrator Madin',
+              email: 'admin@madinpancasila.sch.id',
+              hp: '089876543210',
+              role: 'Admin',
+              profile_picture_url: '',
+              username: 'admin',
+              password: 'admin123'
+            });
+          }
+          // Also ensure we have a default Ustadz
+          const hasUstadz = dbInstance.profiles.some((p: any) => p.role === 'Ustadz');
+          if (!hasUstadz) {
+            dbInstance.profiles.push({
+              id: 'prof-1',
+              nama: 'Ustadz Ahmad Fauzi',
+              email: 'ahmadfauzi@madinpancasila.sch.id',
+              hp: '081234567890',
+              role: 'Ustadz',
+              profile_picture_url: '',
+              username: 'ahmadfauzi',
+              password: 'password'
+            });
+          }
+        }
         results.profiles = dbInstance.profiles.length;
       }
     } catch (err: any) {

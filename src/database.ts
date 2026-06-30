@@ -102,6 +102,7 @@ const initialProfiles: Profile[] = [
     hp: '081234567890',
     role: 'Ustadz',
     profile_picture_url: '',
+    username: 'ahmadfauzi',
     password: 'password'
   },
   {
@@ -111,7 +112,8 @@ const initialProfiles: Profile[] = [
     hp: '089876543210',
     role: 'Admin',
     profile_picture_url: '',
-    password: 'password'
+    username: 'admin',
+    password: 'admin123'
   }
 ];
 
@@ -189,20 +191,52 @@ export class SimpasDatabase {
 
     this.profiles = loadFromLocalStorage<Profile[]>('profiles', initialProfiles);
     
-    // Ensure default profiles have usernames if they don't already
+    // Ensure default profiles have usernames and passwords set correctly, and prevent lock-out if empty
     let updatedProfiles = false;
-    this.profiles.forEach(p => {
-      if (!p.username) {
-        if (p.id === 'prof-1') {
-          p.username = 'ahmadfauzi';
-          updatedProfiles = true;
-        } else if (p.id === 'prof-2') {
-          p.username = 'admin';
-          updatedProfiles = true;
-        } else {
-          p.username = p.nama.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 12);
+    if (this.profiles.length === 0) {
+      this.profiles = [...initialProfiles];
+      updatedProfiles = true;
+    } else {
+      const hasAdmin = this.profiles.some(p => p.role === 'Admin');
+      if (!hasAdmin) {
+        const defaultAdmin = initialProfiles.find(p => p.role === 'Admin');
+        if (defaultAdmin) {
+          this.profiles.push({ ...defaultAdmin });
           updatedProfiles = true;
         }
+      }
+      const hasUstadz = this.profiles.some(p => p.role === 'Ustadz');
+      if (!hasUstadz) {
+        const defaultUstadz = initialProfiles.find(p => p.role === 'Ustadz');
+        if (defaultUstadz) {
+          this.profiles.push({ ...defaultUstadz });
+          updatedProfiles = true;
+        }
+      }
+    }
+
+    this.profiles.forEach(p => {
+      if (p.id === 'prof-2') {
+        if (p.username !== 'admin') {
+          p.username = 'admin';
+          updatedProfiles = true;
+        }
+        if (p.password !== 'admin123') {
+          p.password = 'admin123';
+          updatedProfiles = true;
+        }
+      } else if (p.id === 'prof-1') {
+        if (p.username !== 'ahmadfauzi') {
+          p.username = 'ahmadfauzi';
+          updatedProfiles = true;
+        }
+        if (p.password !== 'password') {
+          p.password = 'password';
+          updatedProfiles = true;
+        }
+      } else if (!p.username) {
+        p.username = p.nama.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 12);
+        updatedProfiles = true;
       }
     });
 
