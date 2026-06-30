@@ -280,18 +280,39 @@
                   </ol>
 
                   <div class="border-top pt-2 mt-2">
-                    <strong class="d-block text-warning mb-1">⚠️ Migrasi/Update Database yang Sudah Ada:</strong>
+                    <strong class="d-block text-success mb-1">✅ Update Penting (nis, alamat, & no hp_ortu dihapus dari Supabase):</strong>
                     <span class="text-xs text-muted d-block mb-2">
-                      Jika Anda mendapatkan error saat melakukan Push Data karena perubahan struktur kelas, profil, atau kolom santri (seperti kolom <code>alamat</code>, <code>tempat_lahir</code>, <code>tanggal_lahir</code>, <code>hp_ortu</code> yang tidak ditemukan), silakan salin dan jalankan query berikut di <strong>SQL Editor Supabase</strong> Anda untuk memperbarui skema:
+                      Kami telah menghapus kolom <code>nis</code>, <code>alamat</code>, dan <code>hp_ortu</code> dari struktur data yang dikirim ke Supabase agar Anda tidak perlu lagi melakukan migrasi manual kolom-kolom tersebut!
                     </span>
-                    <pre class="bg-dark text-warning p-2 rounded text-xxs mb-0 font-mono" style="font-family: monospace;">ALTER TABLE public.classes DROP COLUMN IF EXISTS tingkat;
+                    
+                    <div class="mb-2">
+                      <span class="text-xs fw-semibold text-warning d-block mb-1">Jika Anda ingin menghapus kolom tersebut dari tabel Supabase Anda agar sesuai dengan schema baru:</span>
+                      <pre class="bg-dark text-warning p-2 rounded text-xxs mb-2 font-mono" style="font-family: monospace;">ALTER TABLE public.students DROP COLUMN IF EXISTS nis;
+ALTER TABLE public.students DROP COLUMN IF EXISTS alamat;
+ALTER TABLE public.students DROP COLUMN IF EXISTS hp_ortu;</pre>
+                    </div>
+
+                    <div class="mb-2">
+                      <span class="text-xs fw-semibold text-info d-block mb-1">Kolom Pelengkap Lainnya (Profil & Kelas):</span>
+                      <pre class="bg-dark text-info p-2 rounded text-xxs mb-2 font-mono" style="font-family: monospace;">ALTER TABLE public.classes DROP COLUMN IF EXISTS tingkat;
 ALTER TABLE public.classes ADD COLUMN IF NOT EXISTS wali_kelas_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS telpon TEXT;
-ALTER TABLE public.students ADD COLUMN IF NOT EXISTS alamat TEXT;
-ALTER TABLE public.students ADD COLUMN IF NOT EXISTS tempat_lahir TEXT;
-ALTER TABLE public.students ADD COLUMN IF NOT EXISTS tanggal_lahir TEXT;
-ALTER TABLE public.students ADD COLUMN IF NOT EXISTS hp_ortu TEXT;</pre>
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS telpon TEXT;</pre>
+                    </div>
+
+                    <div>
+                      <span class="text-xs fw-semibold text-danger d-block mb-1">Pilihan Alternatif: Hapus semua tabel lama dan buat ulang agar 100% bersih:</span>
+                      <p class="text-muted text-xxs mb-1">Jalankan script Hapus ini di SQL Editor Supabase, lalu jalankan kembali seluruh <strong>Script Pembuatan Database Lengkap</strong> di atas.</p>
+                      <pre class="bg-dark text-danger p-2 rounded text-xxs mb-0 font-mono" style="font-family: monospace;">DROP TABLE IF EXISTS public.nadhoman_setorans CASCADE;
+DROP TABLE IF EXISTS public.teaching_journals CASCADE;
+DROP TABLE IF EXISTS public.syllabus_targets CASCADE;
+DROP TABLE IF EXISTS public.attendance CASCADE;
+DROP TABLE IF EXISTS public.grades CASCADE;
+DROP TABLE IF EXISTS public.students CASCADE;
+DROP TABLE IF EXISTS public.classes CASCADE;
+DROP TABLE IF EXISTS public.subjects CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;</pre>
+                    </div>
                   </div>
                 </div>
               </div>

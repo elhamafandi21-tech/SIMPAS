@@ -95,13 +95,10 @@ CREATE TABLE IF NOT EXISTS public.classes (
 -- 4. Tabel Students (Santri)
 CREATE TABLE IF NOT EXISTS public.students (
     id TEXT PRIMARY KEY,
-    nis TEXT NOT NULL,
     nama TEXT NOT NULL,
     gender TEXT CHECK (gender IN ('Laki-laki', 'Perempuan')),
     tempat_lahir TEXT,
     tanggal_lahir TEXT,
-    alamat TEXT,
-    hp_ortu TEXT,
     kelas_id TEXT REFERENCES public.classes(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -285,7 +282,15 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
     // 4. Students
     if (dbInstance.students.length > 0) {
       const uniqueStudents = deduplicateById(dbInstance.students);
-      const { error } = await client.from('students').upsert(uniqueStudents);
+      const formattedStudents = uniqueStudents.map((s: any) => ({
+        id: s.id,
+        nama: s.nama,
+        gender: s.gender || null,
+        tempat_lahir: s.tempat_lahir || null,
+        tanggal_lahir: s.tanggal_lahir || null,
+        kelas_id: s.kelas_id || null
+      }));
+      const { error } = await client.from('students').upsert(formattedStudents);
       if (error) throw new Error(`Students Sync Failed: ${error.message}`);
       results.students = uniqueStudents.length;
     }
@@ -355,8 +360,9 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
   } catch (error: any) {
     console.error('Error syncing to Supabase:', error);
     let msg = error.message || 'Terjadi kesalahan saat menyinkronkan data.';
-    if (msg.toLowerCase().includes('alamat') || msg.toLowerCase().includes('column') || msg.toLowerCase().includes('schema cache')) {
-      msg += ' (Saran: Tampaknya struktur tabel Supabase Anda belum diperbarui. Silakan buka tab "Script SQL & Migrasi" di halaman Integrasi Supabase dan jalankan script ALTER TABLE di SQL Editor Supabase Anda)';
+    const lowerMsg = msg.toLowerCase();
+    if (lowerMsg.includes('alamat') || lowerMsg.includes('nis') || lowerMsg.includes('column') || lowerMsg.includes('schema cache')) {
+      msg += ' (Saran: Tampaknya struktur tabel Supabase Anda belum diperbarui/sinkron. Silakan buka tab "Script SQL & Migrasi" di halaman Integrasi Supabase dan jalankan script ALTER TABLE atau DROP TABLE di SQL Editor Supabase Anda)';
     }
     return { success: false, message: msg };
   }

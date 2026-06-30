@@ -279,7 +279,15 @@ export class SimpasDatabase {
             // 4. Students
             try {
               if (this.students.length > 0) {
-                await client.from('students').upsert(this.students);
+                const formattedStudents = this.students.map((s: any) => ({
+                  id: s.id,
+                  nama: s.nama,
+                  gender: s.gender || null,
+                  tempat_lahir: s.tempat_lahir || null,
+                  tanggal_lahir: s.tanggal_lahir || null,
+                  kelas_id: s.kelas_id || null
+                }));
+                await client.from('students').upsert(formattedStudents);
               }
             } catch (err: any) {
               console.warn('Background auto-sync: failed to sync students:', err.message || err);
