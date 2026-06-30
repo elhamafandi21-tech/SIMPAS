@@ -423,7 +423,7 @@
                 </div>
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Tahun Ajaran</label>
-                  <input v-model="classForm.tahun_ajaran" type="text" class="form-control" placeholder="Contoh: 2025/2026" required />
+                  <input v-model="classForm.tahun_ajaran" type="text" class="form-control" placeholder="Contoh: 2026/2027" required />
                 </div>
                 <div class="d-flex justify-content-end gap-2 pt-3 border-top">
                   <button type="button" class="btn btn-outline-secondary" @click="showClassModal = false">Batal</button>
@@ -539,7 +539,7 @@ const ustadzList = computed(() => db.profiles);
 const classForm = ref({
   nama: '',
   wali_kelas_id: '',
-  tahun_ajaran: '2025/2026'
+  tahun_ajaran: '2026/2027'
 });
 
 // Bulk student form ref
@@ -584,7 +584,7 @@ const openAddClassModal = () => {
   classForm.value = {
     nama: '',
     wali_kelas_id: '',
-    tahun_ajaran: '2025/2026'
+    tahun_ajaran: '2026/2027'
   };
   showClassModal.value = true;
 };

@@ -101,7 +101,7 @@
                 <!-- Tahun Ajaran -->
                 <div class="mb-3">
                   <label class="form-label small fw-semibold">Tahun Ajaran</label>
-                  <input v-model="form.tahun_ajaran" type="text" class="form-control" placeholder="Contoh: 2025/2026" required />
+                  <input v-model="form.tahun_ajaran" type="text" class="form-control" placeholder="Contoh: 2026/2027" required />
                 </div>
 
                 <div class="d-flex justify-content-end gap-2 pt-3 border-top">
@@ -137,7 +137,7 @@ const getWaliKelas = (id?: string) => {
 
 const form = ref({
   nama: '',
-  tahun_ajaran: '2025/2026',
+  tahun_ajaran: '2026/2027',
   wali_kelas_id: ''
 });
 
@@ -146,7 +146,7 @@ const openAddModal = () => {
   editId.value = '';
   form.value = {
     nama: '',
-    tahun_ajaran: '2025/2026',
+    tahun_ajaran: '2026/2027',
     wali_kelas_id: ''
   };
   showModal.value = true;

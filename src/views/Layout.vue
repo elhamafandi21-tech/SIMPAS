@@ -248,7 +248,7 @@
             <!-- Real-time time display -->
             <div class="d-none d-lg-block text-end me-2">
               <div class="fw-bold text-heading text-sm" style="font-size: 0.85rem">{{ formattedTime }}</div>
-              <div class="text-muted small" style="font-size: 0.75rem">Tahun Ajaran 2025/2026</div>
+              <div class="text-muted small" style="font-size: 0.75rem">Tahun Ajaran 2026/2027</div>
             </div>
 
             <!-- Profile Dropdown -->

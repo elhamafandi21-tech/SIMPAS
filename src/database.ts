@@ -118,9 +118,9 @@ const initialProfiles: Profile[] = [
 const initialSubjects: Subject[] = [];
 
 const initialClasses: ClassRoom[] = [
-  { id: 'cls-1', nama: 'Kelas 1-A', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
-  { id: 'cls-2', nama: 'Kelas 2-A', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-1' },
-  { id: 'cls-3', nama: 'Kelas 3-B', tahun_ajaran: '2025/2026', wali_kelas_id: 'prof-2' }
+  { id: 'cls-1', nama: 'Kelas 1-A', tahun_ajaran: '2026/2027', wali_kelas_id: 'prof-1' },
+  { id: 'cls-2', nama: 'Kelas 2-A', tahun_ajaran: '2026/2027', wali_kelas_id: 'prof-1' },
+  { id: 'cls-3', nama: 'Kelas 3-B', tahun_ajaran: '2026/2027', wali_kelas_id: 'prof-2' }
 ];
 
 const initialStudents: Student[] = [];
