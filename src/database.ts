@@ -583,6 +583,18 @@ export class SimpasDatabase {
     return newCls;
   }
 
+  addClassesBatch(classes: Omit<ClassRoom, 'id'>[]) {
+    const timestamp = Date.now();
+    classes.forEach((cls, index) => {
+      const newCls = {
+        ...cls,
+        id: `cls-${timestamp}-${index}-${Math.random().toString(36).substring(2, 7)}`
+      };
+      this.classes.push(newCls);
+    });
+    this.saveAll();
+  }
+
   editClass(id: string, updated: Omit<ClassRoom, 'id'>) {
     const idx = this.classes.findIndex(c => c.id === id);
     if (idx !== -1) {

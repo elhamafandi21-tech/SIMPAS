@@ -50,6 +50,18 @@
             </button>
 
             <button 
+              class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3 mb-2"
+              :class="{ 'active bg-warning text-white': activeTab === 'kelas' }"
+              @click="setTab('kelas')"
+            >
+              <SchoolIcon :size="20" />
+              <div>
+                <div class="fw-bold text-xs-heading">Data Kelas</div>
+                <div class="text-xs text-muted" :class="{ 'text-white-50': activeTab === 'kelas' }">Tambah data kelompok kelas belajar</div>
+              </div>
+            </button>
+
+            <button 
               class="nav-link text-start py-3 px-4 d-flex align-items-center gap-3"
               :class="{ 'active bg-info text-white': activeTab === 'kitab' }"
               @click="setTab('kitab')"
@@ -73,6 +85,10 @@
               </button>
               <button @click="downloadTemplate('ustadz')" class="btn btn-xs btn-outline-success text-start d-flex align-items-center justify-content-between">
                 <span>Template Ustadz.xlsx</span>
+                <DownloadIcon :size="14" />
+              </button>
+              <button @click="downloadTemplate('kelas')" class="btn btn-xs btn-outline-warning text-start d-flex align-items-center justify-content-between">
+                <span>Template Kelas.xlsx</span>
                 <DownloadIcon :size="14" />
               </button>
               <button @click="downloadTemplate('kitab')" class="btn btn-xs btn-outline-info text-start d-flex align-items-center justify-content-between">
@@ -216,6 +232,23 @@
                       </td>
                     </template>
 
+                    <template v-if="activeTab === 'kelas'">
+                      <td>
+                        <input v-model="row.nama" type="text" class="form-control form-control-sm text-xs py-0" required />
+                      </td>
+                      <td>
+                        <input v-model="row.tahun_ajaran" type="text" class="form-control form-control-sm text-xs py-0" required />
+                      </td>
+                      <td>
+                        <select v-model="row.wali_kelas_id" class="form-select form-select-sm text-xs py-0">
+                          <option value="">-- Tanpa Wali Kelas --</option>
+                          <option v-for="prof in db.profiles.filter(p => p.role === 'Ustadz')" :key="prof.id" :value="prof.id">
+                            {{ prof.nama }}
+                          </option>
+                        </select>
+                      </td>
+                    </template>
+
                     <template v-if="activeTab === 'kitab'">
                       <td>
                         <input v-model="row.kode" type="text" class="form-control form-control-sm text-xs py-0" required />
@@ -258,7 +291,7 @@
             Petunjuk Format Pengisian Berkas (Excel & CSV)
           </h6>
           <div class="row g-3 text-muted text-xs">
-            <div class="col-md-4 border-end-md">
+            <div class="col-md-3 border-end-md">
               <span class="badge bg-label-primary mb-2">Impor Santri</span>
               <ul class="ps-3 mb-0">
                 <li class="mb-1"><strong class="text-dark">Nomor Urut Santri (No.)</strong>: Urutan santri (misal: 1, 2, 3).</li>
@@ -267,14 +300,22 @@
                 <li class="mb-1"><strong class="text-dark">Kelas</strong>: Dapat diisi nama kelas (misal: "Kelas 1-A") atau ID kelas.</li>
               </ul>
             </div>
-            <div class="col-md-4 border-end-md">
+            <div class="col-md-3 border-end-md">
               <span class="badge bg-label-success mb-2">Impor Ustadz</span>
               <ul class="ps-3 mb-0">
                 <li class="mb-1"><strong class="text-dark">Nama</strong>: Nama guru (contoh: Ustadz Zain).</li>
                 <li class="mb-1"><strong class="text-dark">Username</strong>: Unik untuk login akun ustadz.</li>
               </ul>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3 border-end-md">
+              <span class="badge bg-label-warning mb-2">Impor Kelas</span>
+              <ul class="ps-3 mb-0">
+                <li class="mb-1"><strong class="text-dark">Nama Kelas</strong>: Nama rombel kelas (misal: "Kelas 1-A").</li>
+                <li class="mb-1"><strong class="text-dark">Tahun Ajaran</strong>: Tahun akademik (misal: "2025/2026").</li>
+                <li class="mb-1"><strong class="text-dark">Wali Kelas</strong>: Nama lengkap ustadz pembimbing.</li>
+              </ul>
+            </div>
+            <div class="col-md-3">
               <span class="badge bg-label-info mb-2">Impor Kitab / Mapel</span>
               <ul class="ps-3 mb-0">
                 <li class="mb-1"><strong class="text-dark">Kode</strong>: Unik (misal: "KIT-101", "KIT-102").</li>
@@ -297,6 +338,7 @@ import {
   ArrowLeft as ArrowLeftIcon, 
   Users as UsersIcon, 
   GraduationCap as GraduationCapIcon, 
+  School as SchoolIcon,
   BookOpen as BookOpenIcon, 
   Download as DownloadIcon, 
   UploadCloud as UploadCloudIcon, 
@@ -305,7 +347,7 @@ import {
 } from 'lucide-vue-next';
 
 // Tab controller state
-const activeTab = ref<'siswa' | 'ustadz' | 'kitab'>('siswa');
+const activeTab = ref<'siswa' | 'ustadz' | 'kitab' | 'kelas'>('siswa');
 const dragActive = ref(false);
 const loading = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
@@ -321,12 +363,14 @@ const classes = computed(() => db.classes);
 const tabTitle = computed(() => {
   if (activeTab.value === 'siswa') return 'Santri (Siswa)';
   if (activeTab.value === 'ustadz') return 'Ustadz (Guru)';
+  if (activeTab.value === 'kelas') return 'Data Kelas';
   return 'Kitab / Mata Pelajaran';
 });
 
 const tabBadgeClass = computed(() => {
   if (activeTab.value === 'siswa') return 'bg-label-primary text-primary';
   if (activeTab.value === 'ustadz') return 'bg-label-success text-success';
+  if (activeTab.value === 'kelas') return 'bg-label-warning text-warning';
   return 'bg-label-info text-info';
 });
 
@@ -343,6 +387,12 @@ const previewColumns = computed(() => {
       { key: 'nama', label: 'Nama Lengkap *' },
       { key: 'username', label: 'Username Login *' }
     ];
+  } else if (activeTab.value === 'kelas') {
+    return [
+      { key: 'nama', label: 'Nama Kelas *' },
+      { key: 'tahun_ajaran', label: 'Tahun Ajaran *' },
+      { key: 'wali_kelas_id', label: 'Wali Kelas' }
+    ];
   } else {
     return [
       { key: 'kode', label: 'Kode Kitab *' },
@@ -354,7 +404,7 @@ const previewColumns = computed(() => {
 // Parsed raw Excel data holder
 const parsedRows = ref<any[]>([]);
 
-const setTab = (tab: 'siswa' | 'ustadz' | 'kitab') => {
+const setTab = (tab: 'siswa' | 'ustadz' | 'kitab' | 'kelas') => {
   activeTab.value = tab;
   clearParsed();
 };
@@ -545,6 +595,53 @@ const processFile = (file: File) => {
             email: normalized.email || `${username}@simpas.com`,
             hp: normalized.hp || normalized.telepon || normalized.telpon || '081234567890',
             password: normalized.password || normalized.sandi || 'password'
+          };
+        } else if (activeTab.value === 'kelas') {
+          let nama = normalized.nama || normalized.nama_kelas || '';
+          let tahunAjaran = normalized.tahun_ajaran || normalized.ta || normalized.periode || '';
+          let ustadzVal = normalized.wali_kelas || normalized.walikelas || normalized.wali || '';
+
+          if (!nama && rowValues.length > 0) {
+            nama = rowValues[0];
+            if (rowValues.length >= 2) {
+              tahunAjaran = tahunAjaran || rowValues[1];
+            }
+            if (rowValues.length >= 3) {
+              ustadzVal = ustadzVal || rowValues[2];
+            }
+          }
+
+          if (!tahunAjaran) {
+            // fallback to current academic year
+            const curYear = new Date().getFullYear();
+            tahunAjaran = `${curYear}/${curYear + 1}`;
+          }
+
+          // Try to look up wali kelas ustadz ID from name
+          let waliKelasId = '';
+          if (ustadzVal) {
+            const uStr = String(ustadzVal).toLowerCase().trim();
+            const cleanStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const uStrClean = cleanStr(uStr);
+
+            const foundUstadz = db.profiles.find(p => {
+              if (p.role !== 'Ustadz') return false;
+              const dbNameClean = cleanStr(p.nama);
+              const dbUsernameClean = cleanStr(p.username || '');
+              return dbNameClean.includes(uStrClean) || 
+                     uStrClean.includes(dbNameClean) ||
+                     dbUsernameClean === uStrClean ||
+                     p.id === uStr;
+            });
+            if (foundUstadz) {
+              waliKelasId = foundUstadz.id;
+            }
+          }
+
+          return {
+            nama: nama,
+            tahun_ajaran: tahunAjaran,
+            wali_kelas_id: waliKelasId
           };
         } else {
           // Kitab
@@ -751,6 +848,27 @@ const normalizeKeys = (row: any): any => {
     ) {
       norm.password = val;
     }
+
+    // Check match for tahun_ajaran
+    if (
+      cleanKey.includes('tahunajaran') ||
+      cleanKey === 'ta' ||
+      cleanKey === 'periode' ||
+      cleanKey.includes('thajaran')
+    ) {
+      norm.tahun_ajaran = val;
+    }
+
+    // Check match for wali_kelas
+    if (
+      cleanKey.includes('walikelas') ||
+      cleanKey === 'wali' ||
+      cleanKey.includes('ustadz') ||
+      cleanKey.includes('guru') ||
+      cleanKey.includes('pengajar')
+    ) {
+      norm.wali_kelas = val;
+    }
     
     // Keep raw attributes as fallback
     norm[key] = val;
@@ -810,6 +928,8 @@ const isValidRow = (row: any): boolean => {
     return !!(row.nis && row.nama);
   } else if (activeTab.value === 'ustadz') {
     return !!(row.nama && row.username);
+  } else if (activeTab.value === 'kelas') {
+    return !!(row.nama && row.tahun_ajaran);
   } else {
     return !!(row.kode && row.nama);
   }
@@ -822,6 +942,9 @@ const getRowErrorMsg = (row: any): string => {
   } else if (activeTab.value === 'ustadz') {
     if (!row.nama) return 'Nama harus diisi';
     if (!row.username) return 'Username harus diisi';
+  } else if (activeTab.value === 'kelas') {
+    if (!row.nama) return 'Nama kelas harus diisi';
+    if (!row.tahun_ajaran) return 'Tahun ajaran harus diisi';
   } else {
     if (!row.kode) return 'Kode harus diisi';
     if (!row.nama) return 'Nama kitab harus diisi';
@@ -873,6 +996,14 @@ const saveImport = () => {
       }));
       db.addProfilesBatch(formatted);
       successCount = formatted.length;
+    } else if (activeTab.value === 'kelas') {
+      const formatted = validData.map(item => ({
+        nama: String(item.nama || '').trim(),
+        tahun_ajaran: String(item.tahun_ajaran || '').trim(),
+        wali_kelas_id: item.wali_kelas_id || undefined
+      }));
+      db.addClassesBatch(formatted);
+      successCount = formatted.length;
     } else {
       // Kitab
       const formatted = validData.map(item => ({
@@ -902,7 +1033,7 @@ const saveImport = () => {
 };
 
 // Generates and downloads standard Excel template file for Simpas
-const downloadTemplate = (type: 'siswa' | 'ustadz' | 'kitab') => {
+const downloadTemplate = (type: 'siswa' | 'ustadz' | 'kitab' | 'kelas') => {
   let headers: string[] = [];
   let samples: any[] = [];
   let fileName = '';
@@ -921,6 +1052,13 @@ const downloadTemplate = (type: 'siswa' | 'ustadz' | 'kitab') => {
       { 'Nama Lengkap': 'Ustadzah Lailiyatur Rohmah', 'Username Login': 'lailiya_rohmah' }
     ];
     fileName = 'Template_Ustadz_SIMPAS.xlsx';
+  } else if (type === 'kelas') {
+    headers = ['Nama Kelas', 'Tahun Ajaran', 'Wali Kelas'];
+    samples = [
+      { 'Nama Kelas': 'Kelas 1-A', 'Tahun Ajaran': '2025/2026', 'Wali Kelas': 'Ustadz Zainal Abidin, S.Ag' },
+      { 'Nama Kelas': 'Kelas 1-B', 'Tahun Ajaran': '2025/2026', 'Wali Kelas': 'Ustadzah Lailiyatur Rohmah' }
+    ];
+    fileName = 'Template_Kelas_SIMPAS.xlsx';
   } else {
     headers = ['Kode Kitab', 'Nama Rujukan Kitab'];
     samples = [
