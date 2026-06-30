@@ -354,7 +354,11 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
     };
   } catch (error: any) {
     console.error('Error syncing to Supabase:', error);
-    return { success: false, message: error.message || 'Terjadi kesalahan saat menyinkronkan data.' };
+    let msg = error.message || 'Terjadi kesalahan saat menyinkronkan data.';
+    if (msg.toLowerCase().includes('alamat') || msg.toLowerCase().includes('column') || msg.toLowerCase().includes('schema cache')) {
+      msg += ' (Saran: Tampaknya struktur tabel Supabase Anda belum diperbarui. Silakan buka tab "Script SQL & Migrasi" di halaman Integrasi Supabase dan jalankan script ALTER TABLE di SQL Editor Supabase Anda)';
+    }
+    return { success: false, message: msg };
   }
 }
 

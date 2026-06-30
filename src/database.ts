@@ -243,44 +243,108 @@ export class SimpasDatabase {
         if (client) {
           // Execute background saves in an async block to avoid promise typing issues
           (async () => {
+            // 1. Profiles
             try {
-              await client.from('profiles').upsert(this.profiles);
-              await client.from('subjects').upsert(this.subjects);
-              
-              const formattedClasses = this.classes.map((c: any) => ({
-                id: c.id,
-                nama: c.nama,
-                tahun_ajaran: c.tahun_ajaran,
-                wali_kelas_id: c.wali_kelas_id || null
-              }));
-              await client.from('classes').upsert(formattedClasses);
-              await client.from('students').upsert(this.students);
-              await client.from('grades').upsert(this.grades);
-              await client.from('attendance').upsert(this.attendance);
-              
-              const formattedTargets = this.syllabusTargets.map((t: any) => ({
-                id: t.id,
-                subject_id: t.subject_id,
-                class_id: t.class_id,
-                target_materi: t.target_materi,
-                ustadz_id: t.ustadz_id
-              }));
-              await client.from('syllabus_targets').upsert(formattedTargets);
-              
-              const formattedJournals = this.teachingJournals.map((j: any) => ({
-                id: j.id,
-                date: j.date,
-                ustadz_id: j.ustadz_id,
-                subject_id: j.subject_id,
-                class_id: j.class_id,
-                materi_diajarkan: j.materi_diajarkan,
-                kehadiran_summary: j.kehadiran_summary,
-                notes: j.notes
-              }));
-              await client.from('teaching_journals').upsert(formattedJournals);
-              await client.from('nadhoman_setorans').upsert(this.nadhomanSetorans);
-            } catch (err) {
-              console.warn('Supabase background auto-sync failed:', err);
+              if (this.profiles.length > 0) {
+                await client.from('profiles').upsert(this.profiles);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync profiles:', err.message || err);
+            }
+
+            // 2. Subjects
+            try {
+              if (this.subjects.length > 0) {
+                await client.from('subjects').upsert(this.subjects);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync subjects:', err.message || err);
+            }
+            
+            // 3. Classes
+            try {
+              if (this.classes.length > 0) {
+                const formattedClasses = this.classes.map((c: any) => ({
+                  id: c.id,
+                  nama: c.nama,
+                  tahun_ajaran: c.tahun_ajaran,
+                  wali_kelas_id: c.wali_kelas_id || null
+                }));
+                await client.from('classes').upsert(formattedClasses);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync classes:', err.message || err);
+            }
+
+            // 4. Students
+            try {
+              if (this.students.length > 0) {
+                await client.from('students').upsert(this.students);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync students:', err.message || err);
+            }
+
+            // 5. Grades
+            try {
+              if (this.grades.length > 0) {
+                await client.from('grades').upsert(this.grades);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync grades:', err.message || err);
+            }
+
+            // 6. Attendance
+            try {
+              if (this.attendance.length > 0) {
+                await client.from('attendance').upsert(this.attendance);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync attendance:', err.message || err);
+            }
+            
+            // 7. Syllabus Targets
+            try {
+              if (this.syllabusTargets.length > 0) {
+                const formattedTargets = this.syllabusTargets.map((t: any) => ({
+                  id: t.id,
+                  subject_id: t.subject_id,
+                  class_id: t.class_id,
+                  target_materi: t.target_materi,
+                  ustadz_id: t.ustadz_id
+                }));
+                await client.from('syllabus_targets').upsert(formattedTargets);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync syllabus_targets:', err.message || err);
+            }
+            
+            // 8. Teaching Journals
+            try {
+              if (this.teachingJournals.length > 0) {
+                const formattedJournals = this.teachingJournals.map((j: any) => ({
+                  id: j.id,
+                  date: j.date,
+                  ustadz_id: j.ustadz_id,
+                  subject_id: j.subject_id,
+                  class_id: j.class_id,
+                  materi_diajarkan: j.materi_diajarkan,
+                  kehadiran_summary: j.kehadiran_summary,
+                  notes: j.notes
+                }));
+                await client.from('teaching_journals').upsert(formattedJournals);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync teaching_journals:', err.message || err);
+            }
+
+            // 9. Nadhoman Setorans
+            try {
+              if (this.nadhomanSetorans.length > 0) {
+                await client.from('nadhoman_setorans').upsert(this.nadhomanSetorans);
+              }
+            } catch (err: any) {
+              console.warn('Background auto-sync: failed to sync nadhoman_setorans:', err.message || err);
             }
           })();
         }

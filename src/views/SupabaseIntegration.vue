@@ -222,10 +222,10 @@
                     <div class="border rounded p-3 h-full d-flex flex-column justify-content-between border-danger bg-light-secondary">
                       <div>
                         <div class="d-flex align-items-center gap-2 text-danger fw-bold mb-2">
-                          <TrashIcon :size="20" /> Hapus Semua Data Cloud
+                          <TrashIcon :size="20" /> Reset Total (Aplikasi & Cloud)
                         </div>
                         <p class="text-muted text-xs mb-3">
-                          Hapus permanen seluruh data yang ada di database Supabase Cloud agar Anda dapat melakukan impor ulang data yang bersih.
+                          Hapus permanen seluruh data lokal di browser DAN seluruh data di database Supabase Cloud agar Anda memiliki sistem yang kosong dan bersih untuk impor ulang.
                         </p>
                       </div>
                       <button 
@@ -234,7 +234,7 @@
                         :disabled="connectionStatus !== 'connected' || syncing"
                       >
                         <span v-if="syncing" class="spinner-border spinner-border-sm"></span>
-                        <span v-else><TrashIcon :size="16" /> Bersihkan Supabase</span>
+                        <span v-else><TrashIcon :size="16" /> Bersihkan Total</span>
                       </button>
                     </div>
                   </div>
@@ -282,12 +282,16 @@
                   <div class="border-top pt-2 mt-2">
                     <strong class="d-block text-warning mb-1">⚠️ Migrasi/Update Database yang Sudah Ada:</strong>
                     <span class="text-xs text-muted d-block mb-2">
-                      Jika Anda mendapatkan error saat melakukan Push Data karena perubahan struktur kelas atau profil (penghapusan kolom <code>tingkat</code>, penambahan <code>wali_kelas_id</code>, <code>username</code>, dan <code>telpon</code>), silakan salin dan jalankan query berikut di <strong>SQL Editor Supabase</strong> Anda untuk memperbarui skema:
+                      Jika Anda mendapatkan error saat melakukan Push Data karena perubahan struktur kelas, profil, atau kolom santri (seperti kolom <code>alamat</code>, <code>tempat_lahir</code>, <code>tanggal_lahir</code>, <code>hp_ortu</code> yang tidak ditemukan), silakan salin dan jalankan query berikut di <strong>SQL Editor Supabase</strong> Anda untuk memperbarui skema:
                     </span>
                     <pre class="bg-dark text-warning p-2 rounded text-xxs mb-0 font-mono" style="font-family: monospace;">ALTER TABLE public.classes DROP COLUMN IF EXISTS tingkat;
 ALTER TABLE public.classes ADD COLUMN IF NOT EXISTS wali_kelas_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL;
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS username TEXT;
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS telpon TEXT;</pre>
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS telpon TEXT;
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS alamat TEXT;
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS tempat_lahir TEXT;
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS tanggal_lahir TEXT;
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS hp_ortu TEXT;</pre>
                   </div>
                 </div>
               </div>
@@ -622,19 +626,19 @@ const handlePull = () => {
 
 const handleClearCloudData = () => {
   Swal.fire({
-    title: 'Hapus Semua Data Cloud?',
-    text: 'Aksi ini akan MENGHAPUS secara PERMANEN seluruh data yang ada di database Supabase Cloud Anda. Langkah ini berguna sebelum Anda melakukan impor ulang data dari awal. Lanjutkan?',
+    title: 'Reset Total (Aplikasi & Cloud)?',
+    text: 'Aksi ini akan MENGHAPUS secara PERMANEN seluruh data lokal di browser Anda DAN seluruh data di database Supabase Cloud Anda. Langkah ini berguna agar sistem sinkron 100% dan kosong dari awal. Lanjutkan?',
     icon: 'warning',
     showCancelButton: true,
-    confirmButtonText: 'Ya, Hapus Semua',
+    confirmButtonText: 'Ya, Bersihkan Semua',
     cancelButtonText: 'Batal',
     confirmButtonColor: '#ff3e1d',
     cancelButtonColor: '#8592a3'
   }).then(async (res) => {
     if (res.isConfirmed) {
       Swal.fire({
-        title: 'Menghapus Data Cloud...',
-        html: 'Menghapus seluruh baris tabel di Supabase. Mohon jangan menutup halaman ini...',
+        title: 'Membersihkan Sistem...',
+        html: 'Menghapus seluruh data lokal dan data cloud di Supabase. Mohon jangan menutup halaman ini...',
         allowOutsideClick: false,
         didOpen: () => {
           Swal.showLoading();
@@ -643,20 +647,44 @@ const handleClearCloudData = () => {
 
       syncing.value = true;
       const result = await clearSupabaseAllData();
+      
+      if (result.success) {
+        // Clear local storage
+        localStorage.removeItem('simpas_students');
+        localStorage.removeItem('simpas_subjects');
+        localStorage.removeItem('simpas_grades');
+        localStorage.removeItem('simpas_attendance');
+        localStorage.removeItem('simpas_syllabus_targets');
+        localStorage.removeItem('simpas_teaching_journals');
+        localStorage.removeItem('simpas_nadhoman_setorans');
+        
+        // Reset reactive state in db singleton
+        db.students = [];
+        db.subjects = [];
+        db.grades = [];
+        db.attendance = [];
+        db.syllabusTargets = [];
+        db.teachingJournals = [];
+        db.nadhomanSetorans = [];
+        
+        // Save the empty states
+        db.saveAll();
+      }
+
       syncing.value = false;
       Swal.close();
 
       if (result.success) {
         Swal.fire({
           icon: 'success',
-          title: 'Data Berhasil Dihapus!',
-          text: 'Database Supabase Cloud sekarang dalam keadaan kosong dan siap untuk diimpor ulang.',
+          title: 'Sistem Berhasil Direset!',
+          text: 'Database lokal dan database Supabase Cloud sekarang dalam keadaan kosong dan siap untuk digunakan kembali.',
           confirmButtonColor: '#696cff'
         });
       } else {
         Swal.fire({
           icon: 'error',
-          title: 'Gagal Menghapus Data',
+          title: 'Gagal Mengosongkan Data',
           html: `Terjadi kendala saat membersihkan data:<br><span class="text-danger small">${result.message}</span>`,
           confirmButtonColor: '#ff3e1d'
         });

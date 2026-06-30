@@ -429,14 +429,48 @@ const processFile = (file: File) => {
       }
 
       // Convert rows to Simpas specific data models
-      parsedRows.value = parsedData.map((row: any) => {
+      parsedRows.value = parsedData.map((row: any, idx: number) => {
         const normalized = normalizeKeys(row);
         
+        // Dynamic fallback to index-based values if column names don't match perfectly
+        const rowValues = Object.values(row).map(v => v !== undefined && v !== null ? String(v).trim() : '');
+        
         if (activeTab.value === 'siswa') {
+          let nis = normalized.nis ? String(normalized.nis).trim() : '';
+          let nama = normalized.nama ? String(normalized.nama).trim() : '';
+          let genderVal = normalized.gender || normalized.jenis_kelamin || normalized.jk || '';
+          let kelasVal = normalized.kelas || '';
+
+          // Fallback if nama or nis is empty but row has sequential values
+          if (!nama && rowValues.length > 0) {
+            if (rowValues.length >= 2) {
+              // Guessing: if first column looks like a number/ID/short-string, treat as NIS and second as Nama
+              if (/^\d+$/.test(rowValues[0]) || rowValues[0].length <= 5) {
+                nis = nis || rowValues[0];
+                nama = nama || rowValues[1];
+                genderVal = genderVal || (rowValues[2] || '');
+                kelasVal = kelasVal || (rowValues[3] || '');
+              } else {
+                nama = nama || rowValues[0];
+                genderVal = genderVal || (rowValues[1] || '');
+                kelasVal = kelasVal || (rowValues[2] || '');
+              }
+            } else {
+              nama = nama || rowValues[0];
+            }
+          }
+
+          // If NIS is still empty, auto-generate sequential number so the row doesn't error out
+          if (!nis) {
+            const currentCount = db.students.length + idx + 1;
+            nis = String(1000 + currentCount);
+          }
+
           // Find class reference from name inside Excel, or use default class
           let classId = defaultClassId.value;
-          if (normalized.kelas) {
-            const classStr = String(normalized.kelas).toLowerCase().trim();
+          const targetKelas = kelasVal || normalized.kelas;
+          if (targetKelas) {
+            const classStr = String(targetKelas).toLowerCase().trim();
             const cleanStr = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
             const classStrClean = cleanStr(classStr);
             
@@ -454,17 +488,18 @@ const processFile = (file: File) => {
 
           // Detect gender
           let gender = defaultGender.value;
-          if (normalized.gender || normalized.jenis_kelamin || normalized.jk) {
-            const gStr = String(normalized.gender || normalized.jenis_kelamin || normalized.jk).toLowerCase();
+          const targetGender = genderVal || normalized.gender || normalized.jenis_kelamin || normalized.jk;
+          if (targetGender) {
+            const gStr = String(targetGender).toLowerCase();
             if (gStr.startsWith('p') || gStr.includes('perempuan') || gStr.includes('wanita') || gStr.includes('f')) {
               gender = 'Perempuan';
             } else {
               gender = 'Laki-laki';
             }
-          } else if (normalized.nama) {
+          } else if (nama) {
             // Auto detect from name keys
             const femalePrefixes = ['siti', 'fatima', 'zahra', 'khadijah', 'aisyah', 'nurul', 'dwi', 'putri', 'anisa', 'ani', 'ika', 'sri', 'ni ', 'dewi', 'lail', 'ummi', 'halim', 'fitri'];
-            const lowerName = String(normalized.nama).toLowerCase();
+            const lowerName = String(nama).toLowerCase();
             const isFemale = femalePrefixes.some(p => lowerName.startsWith(p)) || lowerName.endsWith('wati') || lowerName.endsWith('ah') || lowerName.endsWith('ti');
             gender = isFemale ? 'Perempuan' : 'Laki-laki';
           }
@@ -480,8 +515,8 @@ const processFile = (file: File) => {
           }
 
           return {
-            nis: normalized.nis ? String(normalized.nis).trim() : '',
-            nama: normalized.nama ? String(normalized.nama).trim() : '',
+            nis: nis,
+            nama: nama,
             gender: gender,
             kelas_id: classId,
             tempat_lahir: normalized.tempat_lahir || normalized.kota || 'Salatiga',
@@ -490,11 +525,22 @@ const processFile = (file: File) => {
             alamat: normalized.alamat || 'Alamat santri terdaftar Salatiga'
           };
         } else if (activeTab.value === 'ustadz') {
-          const username = normalized.username || normalized.user || 
-            (normalized.nama ? String(normalized.nama).toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 12) : '');
+          let nama = normalized.nama ? String(normalized.nama).trim() : '';
+          let username = normalized.username || normalized.user || '';
+          
+          if (!nama && rowValues.length > 0) {
+            nama = rowValues[0];
+            if (rowValues.length >= 2) {
+              username = username || rowValues[1];
+            }
+          }
+
+          if (!username) {
+            username = nama ? String(nama).toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 12) : `ustadz_${idx + 1}`;
+          }
           
           return {
-            nama: normalized.nama ? String(normalized.nama).trim() : '',
+            nama: nama,
             username: username.trim(),
             email: normalized.email || `${username}@simpas.com`,
             hp: normalized.hp || normalized.telepon || normalized.telpon || '081234567890',
@@ -502,9 +548,27 @@ const processFile = (file: File) => {
           };
         } else {
           // Kitab
+          let kode = normalized.kode || normalized.kode_kitab || normalized.id || '';
+          let nama = normalized.nama || normalized.nama_kitab || normalized.kitab || '';
+
+          if (!nama && rowValues.length > 0) {
+            if (rowValues.length >= 2) {
+              kode = kode || rowValues[0];
+              nama = nama || rowValues[1];
+            } else {
+              nama = nama || rowValues[0];
+            }
+          }
+
+          // If code is empty, auto-generate sequential code
+          if (!kode) {
+            const currentCount = db.subjects.length + idx + 1;
+            kode = `KIT-${String(100 + currentCount)}`;
+          }
+
           return {
-            kode: normalized.kode || normalized.kode_kitab || normalized.id || '',
-            nama: normalized.nama || normalized.nama_kitab || normalized.kitab || ''
+            kode: kode,
+            nama: nama
           };
         }
       });
