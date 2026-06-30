@@ -558,3 +558,31 @@ export async function clearSupabaseAllData(): Promise<{ success: boolean; messag
   }
 }
 
+// Clear ONLY attendance & teaching journals from Supabase tables
+export async function clearSupabaseAttendanceAndJournals(): Promise<{ success: boolean; message: string }> {
+  const client = getSupabaseClient();
+  if (!client) {
+    return { success: false, message: 'Supabase client is not configured.' };
+  }
+
+  try {
+    const tables = ['attendance', 'teaching_journals'];
+
+    for (const table of tables) {
+      const { error } = await client.from(table).delete().neq('id', '_non_existent_id_');
+      if (error) {
+        throw new Error(`Gagal mengosongkan tabel ${table}: ${error.message}`);
+      }
+    }
+
+    return {
+      success: true,
+      message: 'Data absensi santri dan jurnal ustadz di database Supabase berhasil dikosongkan.'
+    };
+  } catch (error: any) {
+    console.error('Error clearing Supabase attendance & journals:', error);
+    return { success: false, message: error.message || 'Terjadi kesalahan saat menghapus data absen.' };
+  }
+}
+
+

@@ -174,8 +174,8 @@
 
                 <div class="row g-3">
                   <!-- Push Data Card -->
-                  <div class="col-12 col-md-4">
-                    <div class="border rounded p-3 h-full d-flex flex-column justify-content-between">
+                  <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="border rounded p-3 h-full d-flex flex-column justify-content-between bg-white shadow-sm">
                       <div>
                         <div class="d-flex align-items-center gap-2 text-primary fw-bold mb-2">
                           <UploadCloudIcon :size="20" /> Upload ke Cloud (Push)
@@ -196,8 +196,8 @@
                   </div>
 
                   <!-- Pull Data Card -->
-                  <div class="col-12 col-md-4">
-                    <div class="border rounded p-3 h-full d-flex flex-column justify-content-between">
+                  <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="border rounded p-3 h-full d-flex flex-column justify-content-between bg-white shadow-sm">
                       <div>
                         <div class="d-flex align-items-center gap-2 text-success fw-bold mb-2">
                           <DownloadCloudIcon :size="20" /> Download ke Lokal (Pull)
@@ -217,9 +217,31 @@
                     </div>
                   </div>
 
+                  <!-- Clear Attendance Only Card -->
+                  <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="border rounded p-3 h-full d-flex flex-column justify-content-between border-warning bg-light-warning shadow-sm">
+                      <div>
+                        <div class="d-flex align-items-center gap-2 text-warning fw-bold mb-2">
+                          <TrashIcon :size="20" /> Kosongkan Absen & Jurnal
+                        </div>
+                        <p class="text-muted text-xs mb-3">
+                          Hapus secara spesifik data absen santri dan jurnal mengajar ustadz. Data master seperti santri, kelas, ustadz, & mata pelajaran tetap aman.
+                        </p>
+                      </div>
+                      <button 
+                        @click="handleClearAttendanceData" 
+                        class="btn btn-outline-warning w-full py-2 d-flex align-items-center justify-content-center gap-2"
+                        :disabled="connectionStatus !== 'connected' || syncing"
+                      >
+                        <span v-if="syncing" class="spinner-border spinner-border-sm"></span>
+                        <span v-else><TrashIcon :size="16" /> Kosongkan Absen</span>
+                      </button>
+                    </div>
+                  </div>
+
                   <!-- Clear Cloud Data Card -->
-                  <div class="col-12 col-md-4">
-                    <div class="border rounded p-3 h-full d-flex flex-column justify-content-between border-danger bg-light-secondary">
+                  <div class="col-12 col-sm-6 col-lg-3">
+                    <div class="border rounded p-3 h-full d-flex flex-column justify-content-between border-danger bg-light-secondary shadow-sm">
                       <div>
                         <div class="d-flex align-items-center gap-2 text-danger fw-bold mb-2">
                           <TrashIcon :size="20" /> Reset Total (Aplikasi & Cloud)
@@ -335,6 +357,7 @@ import {
   pushLocalToSupabase,
   pullSupabaseToLocal,
   clearSupabaseAllData,
+  clearSupabaseAttendanceAndJournals,
   SUPABASE_SQL_SCHEMA
 } from '../supabase';
 import Swal from 'sweetalert2';
@@ -707,6 +730,65 @@ const handleClearCloudData = () => {
           icon: 'error',
           title: 'Gagal Mengosongkan Data',
           html: `Terjadi kendala saat membersihkan data:<br><span class="text-danger small">${result.message}</span>`,
+          confirmButtonColor: '#ff3e1d'
+        });
+      }
+    }
+  });
+};
+
+const handleClearAttendanceData = () => {
+  Swal.fire({
+    title: 'Kosongkan Data Absen & Jurnal?',
+    text: 'Aksi ini akan MENGHAPUS secara PERMANEN seluruh data presensi/absen santri DAN jurnal mengajar ustadz di browser Anda serta di database Supabase Cloud Anda. Data lain (seperti data santri, ustadz, kelas, mata pelajaran) tetap aman. Lanjutkan?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Ya, Kosongkan',
+    cancelButtonText: 'Batal',
+    confirmButtonColor: '#ff9f43',
+    cancelButtonColor: '#8592a3'
+  }).then(async (res) => {
+    if (res.isConfirmed) {
+      Swal.fire({
+        title: 'Mengosongkan Data Absen...',
+        html: 'Menghapus data presensi dan jurnal mengajar. Mohon tunggu...',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      syncing.value = true;
+      const result = await clearSupabaseAttendanceAndJournals();
+      
+      if (result.success) {
+        // Clear local storage
+        localStorage.removeItem('simpas_attendance');
+        localStorage.removeItem('simpas_teaching_journals');
+        
+        // Reset reactive state in db singleton
+        db.attendance = [];
+        db.teachingJournals = [];
+        
+        // Save the empty states
+        db.saveAll();
+      }
+
+      syncing.value = false;
+      Swal.close();
+
+      if (result.success) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil Dikosongkan!',
+          text: 'Data absen santri dan jurnal ustadz di lokal maupun di Supabase Cloud telah berhasil dikosongkan.',
+          confirmButtonColor: '#696cff'
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal Mengosongkan Data',
+          html: `Terjadi kendala:<br><span class="text-danger small">${result.message}</span>`,
           confirmButtonColor: '#ff3e1d'
         });
       }
