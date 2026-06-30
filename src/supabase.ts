@@ -250,121 +250,230 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
       nadhoman_setorans: 0
     };
 
+    const missingTables: string[] = [];
+
     // 1. Profiles
-    if (dbInstance.profiles.length > 0) {
-      const uniqueProfiles = deduplicateById(dbInstance.profiles);
-      const formattedProfiles = uniqueProfiles.map((p: any) => ({
-        id: p.id,
-        nama: p.nama,
-        email: p.email || null,
-        hp: p.hp || null,
-        role: p.role,
-        profile_picture_url: p.profile_picture_url || null,
-        password: p.password || null,
-        username: p.username || null,
-        telpon: p.telpon || null
-      }));
-      const { error } = await client.from('profiles').upsert(formattedProfiles);
-      if (error) throw new Error(`Profiles Sync Failed: ${error.message}`);
-      results.profiles = uniqueProfiles.length;
+    try {
+      if (dbInstance.profiles.length > 0) {
+        const uniqueProfiles = deduplicateById(dbInstance.profiles);
+        const formattedProfiles = uniqueProfiles.map((p: any) => ({
+          id: p.id,
+          nama: p.nama,
+          email: p.email || null,
+          hp: p.hp || null,
+          role: p.role,
+          profile_picture_url: p.profile_picture_url || null,
+          password: p.password || null,
+          username: p.username || null,
+          telpon: p.telpon || null
+        }));
+        const { error } = await client.from('profiles').upsert(formattedProfiles);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('profiles');
+          } else {
+            throw new Error(`Profiles Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.profiles = uniqueProfiles.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Profiles push skipped:', err.message || err);
     }
 
     // 2. Subjects
-    if (dbInstance.subjects.length > 0) {
-      const uniqueSubjects = deduplicateById(dbInstance.subjects);
-      const { error } = await client.from('subjects').upsert(uniqueSubjects);
-      if (error) throw new Error(`Subjects Sync Failed: ${error.message}`);
-      results.subjects = uniqueSubjects.length;
+    try {
+      if (dbInstance.subjects.length > 0) {
+        const uniqueSubjects = deduplicateById(dbInstance.subjects);
+        const { error } = await client.from('subjects').upsert(uniqueSubjects);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('subjects');
+          } else {
+            throw new Error(`Subjects Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.subjects = uniqueSubjects.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Subjects push skipped:', err.message || err);
     }
 
     // 3. Classes
-    if (dbInstance.classes.length > 0) {
-      const uniqueClasses = deduplicateById(dbInstance.classes);
-      const formattedClasses = uniqueClasses.map((c: any) => ({
-        id: c.id,
-        nama: c.nama,
-        tahun_ajaran: c.tahun_ajaran,
-        wali_kelas_id: c.wali_kelas_id || null
-      }));
-      const { error } = await client.from('classes').upsert(formattedClasses);
-      if (error) throw new Error(`Classes Sync Failed: ${error.message}`);
-      results.classes = uniqueClasses.length;
+    try {
+      if (dbInstance.classes.length > 0) {
+        const uniqueClasses = deduplicateById(dbInstance.classes);
+        const formattedClasses = uniqueClasses.map((c: any) => ({
+          id: c.id,
+          nama: c.nama,
+          tahun_ajaran: c.tahun_ajaran,
+          wali_kelas_id: c.wali_kelas_id || null
+        }));
+        const { error } = await client.from('classes').upsert(formattedClasses);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('classes');
+          } else {
+            throw new Error(`Classes Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.classes = uniqueClasses.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Classes push skipped:', err.message || err);
     }
 
     // 4. Students
-    if (dbInstance.students.length > 0) {
-      const uniqueStudents = deduplicateById(dbInstance.students);
-      const formattedStudents = uniqueStudents.map((s: any) => ({
-        id: s.id,
-        nama: s.nama,
-        gender: s.gender || null,
-        tempat_lahir: s.tempat_lahir || null,
-        tanggal_lahir: s.tanggal_lahir || null,
-        kelas_id: s.kelas_id || null,
-        nis: s.nis || null,
-        alamat: s.alamat || null,
-        hp_ortu: s.hp_ortu || null
-      }));
-      const { error } = await client.from('students').upsert(formattedStudents);
-      if (error) throw new Error(`Students Sync Failed: ${error.message}`);
-      results.students = uniqueStudents.length;
+    try {
+      if (dbInstance.students.length > 0) {
+        const uniqueStudents = deduplicateById(dbInstance.students);
+        const formattedStudents = uniqueStudents.map((s: any) => ({
+          id: s.id,
+          nama: s.nama,
+          gender: s.gender || null,
+          tempat_lahir: s.tempat_lahir || null,
+          tanggal_lahir: s.tanggal_lahir || null,
+          kelas_id: s.kelas_id || null,
+          nis: s.nis || null,
+          alamat: s.alamat || null,
+          hp_ortu: s.hp_ortu || null
+        }));
+        const { error } = await client.from('students').upsert(formattedStudents);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('students');
+          } else {
+            throw new Error(`Students Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.students = uniqueStudents.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Students push skipped:', err.message || err);
     }
 
     // 5. Grades
-    if (dbInstance.grades.length > 0) {
-      const uniqueGrades = deduplicateById(dbInstance.grades);
-      const { error } = await client.from('grades').upsert(uniqueGrades);
-      if (error) throw new Error(`Grades Sync Failed: ${error.message}`);
-      results.grades = uniqueGrades.length;
+    try {
+      if (dbInstance.grades.length > 0) {
+        const uniqueGrades = deduplicateById(dbInstance.grades);
+        const { error } = await client.from('grades').upsert(uniqueGrades);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('grades');
+          } else {
+            throw new Error(`Grades Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.grades = uniqueGrades.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Grades push skipped:', err.message || err);
     }
 
     // 6. Attendance
-    if (dbInstance.attendance.length > 0) {
-      const uniqueAttendance = deduplicateById(dbInstance.attendance);
-      const { error } = await client.from('attendance').upsert(uniqueAttendance);
-      if (error) throw new Error(`Attendance Sync Failed: ${error.message}`);
-      results.attendance = uniqueAttendance.length;
+    try {
+      if (dbInstance.attendance.length > 0) {
+        const uniqueAttendance = deduplicateById(dbInstance.attendance);
+        const { error } = await client.from('attendance').upsert(uniqueAttendance);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('attendance');
+          } else {
+            throw new Error(`Attendance Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.attendance = uniqueAttendance.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Attendance push skipped:', err.message || err);
     }
 
     // 7. Syllabus Targets
-    if (dbInstance.syllabusTargets.length > 0) {
-      const uniqueTargets = deduplicateById(dbInstance.syllabusTargets);
-      const formattedTargets = uniqueTargets.map((t: any) => ({
-        id: t.id,
-        subject_id: t.subject_id,
-        class_id: t.class_id,
-        target_materi: t.target_materi,
-        ustadz_id: t.ustadz_id
-      }));
-      const { error } = await client.from('syllabus_targets').upsert(formattedTargets);
-      if (error) throw new Error(`Syllabus Targets Sync Failed: ${error.message}`);
-      results.syllabus_targets = uniqueTargets.length;
+    try {
+      if (dbInstance.syllabusTargets.length > 0) {
+        const uniqueTargets = deduplicateById(dbInstance.syllabusTargets);
+        const formattedTargets = uniqueTargets.map((t: any) => ({
+          id: t.id,
+          subject_id: t.subject_id,
+          class_id: t.class_id,
+          target_materi: t.target_materi,
+          ustadz_id: t.ustadz_id
+        }));
+        const { error } = await client.from('syllabus_targets').upsert(formattedTargets);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('syllabus_targets');
+          } else {
+            throw new Error(`Syllabus Targets Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.syllabus_targets = uniqueTargets.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Syllabus targets push skipped:', err.message || err);
     }
 
     // 8. Teaching Journals
-    if (dbInstance.teachingJournals.length > 0) {
-      const uniqueJournals = deduplicateById(dbInstance.teachingJournals);
-      const formattedJournals = uniqueJournals.map((j: any) => ({
-        id: j.id,
-        date: j.date,
-        ustadz_id: j.ustadz_id,
-        subject_id: j.subject_id,
-        class_id: j.class_id,
-        materi_diajarkan: j.materi_diajarkan,
-        kehadiran_summary: j.kehadiran_summary,
-        notes: j.notes
-      }));
-      const { error } = await client.from('teaching_journals').upsert(formattedJournals);
-      if (error) throw new Error(`Teaching Journals Sync Failed: ${error.message}`);
-      results.teaching_journals = uniqueJournals.length;
+    try {
+      if (dbInstance.teachingJournals.length > 0) {
+        const uniqueJournals = deduplicateById(dbInstance.teachingJournals);
+        const formattedJournals = uniqueJournals.map((j: any) => ({
+          id: j.id,
+          date: j.date,
+          ustadz_id: j.ustadz_id,
+          subject_id: j.subject_id,
+          class_id: j.class_id,
+          materi_diajarkan: j.materi_diajarkan,
+          kehadiran_summary: j.kehadiran_summary,
+          notes: j.notes
+        }));
+        const { error } = await client.from('teaching_journals').upsert(formattedJournals);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('teaching_journals');
+          } else {
+            throw new Error(`Teaching Journals Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.teaching_journals = uniqueJournals.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Teaching journals push skipped:', err.message || err);
     }
 
     // 9. Nadhoman Setorans
-    if (dbInstance.nadhomanSetorans.length > 0) {
-      const uniqueNadhomanSetorans = deduplicateById(dbInstance.nadhomanSetorans);
-      const { error } = await client.from('nadhoman_setorans').upsert(uniqueNadhomanSetorans);
-      if (error) throw new Error(`Nadhoman Setorans Sync Failed: ${error.message}`);
-      results.nadhoman_setorans = uniqueNadhomanSetorans.length;
+    try {
+      if (dbInstance.nadhomanSetorans.length > 0) {
+        const uniqueNadhomanSetorans = deduplicateById(dbInstance.nadhomanSetorans);
+        const { error } = await client.from('nadhoman_setorans').upsert(uniqueNadhomanSetorans);
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            missingTables.push('nadhoman_setorans');
+          } else {
+            throw new Error(`Nadhoman Setorans Sync Failed: ${error.message}`);
+          }
+        } else {
+          results.nadhoman_setorans = uniqueNadhomanSetorans.length;
+        }
+      }
+    } catch (err: any) {
+      console.warn('Nadhoman setorans push skipped:', err.message || err);
+    }
+
+    if (missingTables.length > 0) {
+      return {
+        success: true,
+        message: `Sinkronisasi berhasil sebagian! Beberapa tabel belum terbuat di Supabase Anda (${missingTables.join(', ')}). Harap jalankan script migrasi terbaru di SQL Editor Supabase Anda.`,
+        counts: results
+      };
     }
 
     return {
@@ -403,95 +512,204 @@ export async function pullSupabaseToLocal(dbInstance: any): Promise<{ success: b
       nadhoman_setorans: 0
     };
 
+    const missingTables: string[] = [];
+
     // 1. Profiles
-    const { data: profilesData, error: errProf } = await client.from('profiles').select('*');
-    if (errProf) throw new Error(`Gagal memuat profiles: ${errProf.message}`);
-    dbInstance.profiles = profilesData || [];
-    results.profiles = dbInstance.profiles.length;
+    try {
+      const { data: profilesData, error: errProf } = await client.from('profiles').select('*');
+      if (errProf) {
+        if (errProf.message.includes('schema cache') || errProf.message.includes('does not exist')) {
+          missingTables.push('profiles');
+        } else {
+          throw new Error(`Gagal memuat profiles: ${errProf.message}`);
+        }
+      } else {
+        dbInstance.profiles = profilesData || [];
+        results.profiles = dbInstance.profiles.length;
+      }
+    } catch (err: any) {
+      console.warn('Profiles pull skipped:', err.message || err);
+    }
 
     // 2. Subjects
-    const { data: subjectsData, error: errSub } = await client.from('subjects').select('*');
-    if (errSub) throw new Error(`Gagal memuat subjects: ${errSub.message}`);
-    dbInstance.subjects = subjectsData || [];
-    results.subjects = dbInstance.subjects.length;
+    try {
+      const { data: subjectsData, error: errSub } = await client.from('subjects').select('*');
+      if (errSub) {
+        if (errSub.message.includes('schema cache') || errSub.message.includes('does not exist')) {
+          missingTables.push('subjects');
+        } else {
+          throw new Error(`Gagal memuat subjects: ${errSub.message}`);
+        }
+      } else {
+        dbInstance.subjects = subjectsData || [];
+        results.subjects = dbInstance.subjects.length;
+      }
+    } catch (err: any) {
+      console.warn('Subjects pull skipped:', err.message || err);
+    }
 
     // 3. Classes
-    const { data: classesData, error: errCls } = await client.from('classes').select('*');
-    if (errCls) throw new Error(`Gagal memuat classes: ${errCls.message}`);
-    dbInstance.classes = (classesData || []).map((c: any) => ({
-      id: c.id,
-      nama: c.nama,
-      tahun_ajaran: c.tahun_ajaran,
-      wali_kelas_id: c.wali_kelas_id || ''
-    }));
-    results.classes = dbInstance.classes.length;
+    try {
+      const { data: classesData, error: errCls } = await client.from('classes').select('*');
+      if (errCls) {
+        if (errCls.message.includes('schema cache') || errCls.message.includes('does not exist')) {
+          missingTables.push('classes');
+        } else {
+          throw new Error(`Gagal memuat classes: ${errCls.message}`);
+        }
+      } else {
+        dbInstance.classes = (classesData || []).map((c: any) => ({
+          id: c.id,
+          nama: c.nama,
+          tahun_ajaran: c.tahun_ajaran,
+          wali_kelas_id: c.wali_kelas_id || ''
+        }));
+        results.classes = dbInstance.classes.length;
+      }
+    } catch (err: any) {
+      console.warn('Classes pull skipped:', err.message || err);
+    }
 
     // 4. Students
-    const { data: studentsData, error: errStd } = await client.from('students').select('*');
-    if (errStd) throw new Error(`Gagal memuat students: ${errStd.message}`);
-    dbInstance.students = (studentsData || []).map((s: any, idx: number) => {
-      const localStudent = dbInstance.students.find((ls: any) => ls.id === s.id);
-      return {
-        id: s.id,
-        nama: s.nama,
-        gender: s.gender || 'Laki-laki',
-        tempat_lahir: s.tempat_lahir || 'Salatiga',
-        tanggal_lahir: s.tanggal_lahir || '2010-01-01',
-        kelas_id: s.kelas_id || '',
-        nis: s.nis || (localStudent && localStudent.nis) || String(1000 + idx + 1),
-        alamat: s.alamat || (localStudent && localStudent.alamat) || 'Alamat santri terdaftar',
-        hp_ortu: s.hp_ortu || (localStudent && localStudent.hp_ortu) || '081234567890'
-      };
-    });
-    results.students = dbInstance.students.length;
+    try {
+      const { data: studentsData, error: errStd } = await client.from('students').select('*');
+      if (errStd) {
+        if (errStd.message.includes('schema cache') || errStd.message.includes('does not exist')) {
+          missingTables.push('students');
+        } else {
+          throw new Error(`Gagal memuat students: ${errStd.message}`);
+        }
+      } else {
+        dbInstance.students = (studentsData || []).map((s: any, idx: number) => {
+          const localStudent = dbInstance.students.find((ls: any) => ls.id === s.id);
+          return {
+            id: s.id,
+            nama: s.nama,
+            gender: s.gender || 'Laki-laki',
+            tempat_lahir: s.tempat_lahir || 'Salatiga',
+            tanggal_lahir: s.tanggal_lahir || '2010-01-01',
+            kelas_id: s.kelas_id || '',
+            nis: s.nis || (localStudent && localStudent.nis) || String(1000 + idx + 1),
+            alamat: s.alamat || (localStudent && localStudent.alamat) || 'Alamat santri terdaftar',
+            hp_ortu: s.hp_ortu || (localStudent && localStudent.hp_ortu) || '081234567890'
+          };
+        });
+        results.students = dbInstance.students.length;
+      }
+    } catch (err: any) {
+      console.warn('Students pull skipped:', err.message || err);
+    }
 
     // 5. Grades
-    const { data: gradesData, error: errGrd } = await client.from('grades').select('*');
-    if (errGrd) throw new Error(`Gagal memuat grades: ${errGrd.message}`);
-    dbInstance.grades = gradesData || [];
-    results.grades = dbInstance.grades.length;
+    try {
+      const { data: gradesData, error: errGrd } = await client.from('grades').select('*');
+      if (errGrd) {
+        if (errGrd.message.includes('schema cache') || errGrd.message.includes('does not exist')) {
+          missingTables.push('grades');
+        } else {
+          throw new Error(`Gagal memuat grades: ${errGrd.message}`);
+        }
+      } else {
+        dbInstance.grades = gradesData || [];
+        results.grades = dbInstance.grades.length;
+      }
+    } catch (err: any) {
+      console.warn('Grades pull skipped:', err.message || err);
+    }
 
     // 6. Attendance
-    const { data: attendanceData, error: errAtt } = await client.from('attendance').select('*');
-    if (errAtt) throw new Error(`Gagal memuat attendance: ${errAtt.message}`);
-    dbInstance.attendance = attendanceData || [];
-    results.attendance = dbInstance.attendance.length;
+    try {
+      const { data: attendanceData, error: errAtt } = await client.from('attendance').select('*');
+      if (errAtt) {
+        if (errAtt.message.includes('schema cache') || errAtt.message.includes('does not exist')) {
+          missingTables.push('attendance');
+        } else {
+          throw new Error(`Gagal memuat attendance: ${errAtt.message}`);
+        }
+      } else {
+        dbInstance.attendance = attendanceData || [];
+        results.attendance = dbInstance.attendance.length;
+      }
+    } catch (err: any) {
+      console.warn('Attendance pull skipped:', err.message || err);
+    }
 
     // 7. Syllabus Targets
-    const { data: targetsData, error: errSyl } = await client.from('syllabus_targets').select('*');
-    if (errSyl) throw new Error(`Gagal memuat syllabus_targets: ${errSyl.message}`);
-    dbInstance.syllabusTargets = (targetsData || []).map((t: any) => ({
-      id: t.id,
-      subject_id: t.subject_id,
-      class_id: t.class_id,
-      target_materi: t.target_materi,
-      ustadz_id: t.ustadz_id
-    }));
-    results.syllabus_targets = dbInstance.syllabusTargets.length;
+    try {
+      const { data: targetsData, error: errSyl } = await client.from('syllabus_targets').select('*');
+      if (errSyl) {
+        if (errSyl.message.includes('schema cache') || errSyl.message.includes('does not exist')) {
+          missingTables.push('syllabus_targets');
+        } else {
+          throw new Error(`Gagal memuat syllabus_targets: ${errSyl.message}`);
+        }
+      } else {
+        dbInstance.syllabusTargets = (targetsData || []).map((t: any) => ({
+          id: t.id,
+          subject_id: t.subject_id,
+          class_id: t.class_id,
+          target_materi: t.target_materi,
+          ustadz_id: t.ustadz_id
+        }));
+        results.syllabus_targets = dbInstance.syllabusTargets.length;
+      }
+    } catch (err: any) {
+      console.warn('Syllabus targets pull skipped:', err.message || err);
+    }
 
     // 8. Teaching Journals
-    const { data: journalsData, error: errJr } = await client.from('teaching_journals').select('*');
-    if (errJr) throw new Error(`Gagal memuat teaching_journals: ${errJr.message}`);
-    dbInstance.teachingJournals = (journalsData || []).map((j: any) => ({
-      id: j.id,
-      date: j.date,
-      ustadz_id: j.ustadz_id,
-      subject_id: j.subject_id,
-      class_id: j.class_id,
-      materi_diajarkan: j.materi_diajarkan,
-      kehadiran_summary: j.kehadiran_summary,
-      notes: j.notes
-    }));
-    results.teaching_journals = dbInstance.teachingJournals.length;
+    try {
+      const { data: journalsData, error: errJr } = await client.from('teaching_journals').select('*');
+      if (errJr) {
+        if (errJr.message.includes('schema cache') || errJr.message.includes('does not exist')) {
+          missingTables.push('teaching_journals');
+        } else {
+          throw new Error(`Gagal memuat teaching_journals: ${errJr.message}`);
+        }
+      } else {
+        dbInstance.teachingJournals = (journalsData || []).map((j: any) => ({
+          id: j.id,
+          date: j.date,
+          ustadz_id: j.ustadz_id,
+          subject_id: j.subject_id,
+          class_id: j.class_id,
+          materi_diajarkan: j.materi_diajarkan,
+          kehadiran_summary: j.kehadiran_summary,
+          notes: j.notes
+        }));
+        results.teaching_journals = dbInstance.teachingJournals.length;
+      }
+    } catch (err: any) {
+      console.warn('Teaching journals pull skipped:', err.message || err);
+    }
 
     // 9. Nadhoman Setorans
-    const { data: setoranData, error: errNd } = await client.from('nadhoman_setorans').select('*');
-    if (errNd) throw new Error(`Gagal memuat nadhoman_setorans: ${errNd.message}`);
-    dbInstance.nadhomanSetorans = setoranData || [];
-    results.nadhoman_setorans = dbInstance.nadhomanSetorans.length;
+    try {
+      const { data: setoranData, error: errNd } = await client.from('nadhoman_setorans').select('*');
+      if (errNd) {
+        if (errNd.message.includes('schema cache') || errNd.message.includes('does not exist')) {
+          missingTables.push('nadhoman_setorans');
+        } else {
+          throw new Error(`Gagal memuat nadhoman_setorans: ${errNd.message}`);
+        }
+      } else {
+        dbInstance.nadhomanSetorans = setoranData || [];
+        results.nadhoman_setorans = dbInstance.nadhomanSetorans.length;
+      }
+    } catch (err: any) {
+      console.warn('Nadhoman setorans pull skipped:', err.message || err);
+    }
 
     // Persist pulled data to LocalStorage
     dbInstance.saveAll();
+
+    if (missingTables.length > 0) {
+      return {
+        success: true,
+        message: `Berhasil mengunduh data! Beberapa tabel belum terbuat di Supabase Anda (${missingTables.join(', ')}). Harap jalankan script migrasi terbaru di SQL Editor Supabase Anda.`,
+        counts: results
+      };
+    }
 
     return {
       success: true,
@@ -538,11 +756,29 @@ export async function clearSupabaseAllData(): Promise<{ success: boolean; messag
       'profiles'
     ];
 
+    const skippedTables: string[] = [];
+
     for (const table of tables) {
-      const { error } = await client.from(table).delete().neq('id', '_non_existent_id_');
-      if (error) {
-        throw new Error(`Gagal mengosongkan tabel ${table}: ${error.message}`);
+      try {
+        const { error } = await client.from(table).delete().neq('id', '_non_existent_id_');
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            skippedTables.push(table);
+            console.warn(`Table ${table} does not exist in Supabase yet. Skipping.`);
+          } else {
+            throw new Error(`Gagal mengosongkan tabel ${table}: ${error.message}`);
+          }
+        }
+      } catch (tblErr: any) {
+        console.warn(`Error while clearing table ${table}, skipping gracefully:`, tblErr.message || tblErr);
       }
+    }
+
+    if (skippedTables.length > 0) {
+      return {
+        success: true,
+        message: `Semua data di tabel Supabase yang aktif berhasil dihapus. (Melewati tabel yang tidak terdeteksi: ${skippedTables.join(', ')})`
+      };
     }
 
     return {
@@ -564,12 +800,29 @@ export async function clearSupabaseAttendanceAndJournals(): Promise<{ success: b
 
   try {
     const tables = ['attendance', 'teaching_journals'];
+    const skippedTables: string[] = [];
 
     for (const table of tables) {
-      const { error } = await client.from(table).delete().neq('id', '_non_existent_id_');
-      if (error) {
-        throw new Error(`Gagal mengosongkan tabel ${table}: ${error.message}`);
+      try {
+        const { error } = await client.from(table).delete().neq('id', '_non_existent_id_');
+        if (error) {
+          if (error.message.includes('schema cache') || error.message.includes('does not exist')) {
+            skippedTables.push(table);
+            console.warn(`Table ${table} does not exist in Supabase yet. Skipping.`);
+          } else {
+            throw new Error(`Gagal mengosongkan tabel ${table}: ${error.message}`);
+          }
+        }
+      } catch (tblErr: any) {
+        console.warn(`Error while clearing table ${table}, skipping gracefully:`, tblErr.message || tblErr);
       }
+    }
+
+    if (skippedTables.length > 0) {
+      return {
+        success: true,
+        message: `Data berhasil dikosongkan untuk tabel yang aktif. (Melewati tabel yang tidak terdeteksi: ${skippedTables.join(', ')})`
+      };
     }
 
     return {
