@@ -303,7 +303,10 @@ export class SimpasDatabase {
                   gender: s.gender || null,
                   tempat_lahir: s.tempat_lahir || null,
                   tanggal_lahir: s.tanggal_lahir || null,
-                  kelas_id: s.kelas_id || null
+                  kelas_id: s.kelas_id || null,
+                  nis: s.nis || null,
+                  alamat: s.alamat || null,
+                  hp_ortu: s.hp_ortu || null
                 }));
                 await client.from('students').upsert(formattedStudents);
               }

@@ -206,10 +206,10 @@
       </div>
 
       <!-- Realtime badge info -->
-      <div class="p-3 border-top bg-light text-center">
+      <div class="p-3 border-top bg-light text-center hover-bg-light" style="cursor: pointer;" @click="handleManualSync" title="Klik untuk Sinkronisasi Manual">
         <div class="d-flex align-items-center justify-content-center gap-2">
-          <span class="pulse-indicator"></span>
-          <span class="text-xs fw-semibold text-muted">Supabase Sync Live</span>
+          <span class="pulse-indicator" :class="{ 'syncing-pulse': isSyncing }"></span>
+          <span class="text-xs fw-semibold text-muted">{{ isSyncing ? 'Sinkronisasi...' : 'Supabase Sync Live' }}</span>
         </div>
       </div>
     </aside>
@@ -239,6 +239,16 @@
 
           <!-- Right side user menu -->
           <div class="d-flex align-items-center gap-3">
+            <!-- Manual Sync Button -->
+            <button 
+              class="btn btn-sm btn-icon rounded-circle border-0 text-secondary hover-bg-light" 
+              :class="{ 'spin-animation': isSyncing }"
+              @click="handleManualSync" 
+              title="Sinkronisasi Data Supabase"
+            >
+              <RefreshCwIcon :size="18" />
+            </button>
+
             <!-- Theme Mode Toggle Button -->
             <button class="btn btn-sm btn-icon rounded-circle border-0 text-secondary hover-bg-light" @click="toggleTheme" title="Toggle Theme Mode">
               <SunIcon v-if="currentTheme === 'light'" :size="20" />
@@ -347,13 +357,68 @@ import {
   Moon as MoonIcon,
   Database as DatabaseIcon,
   Contact as ContactIcon,
-  User as UserIcon
+  User as UserIcon,
+  RefreshCw as RefreshCwIcon
 } from 'lucide-vue-next';
 
 const router = useRouter();
 const mobileSidebarOpen = ref(false);
 const currentTheme = ref('light');
 const currentTime = ref(new Date());
+const isSyncing = ref(false);
+
+const handleManualSync = async () => {
+  if (isSyncing.value) return;
+  isSyncing.value = true;
+  
+  Swal.fire({
+    title: 'Sinkronisasi Cloud...',
+    text: 'Menghubungkan ke Supabase, mengunduh data terbaru (Pull) & mengunggah data lokal (Push). Mohon tunggu...',
+    allowOutsideClick: false,
+    didOpen: () => {
+      Swal.showLoading();
+    }
+  });
+
+  try {
+    const { pullSupabaseToLocal, pushLocalToSupabase } = await import('../supabase');
+    
+    // 1. Pull first to get any changes from other users
+    const pullResult = await pullSupabaseToLocal(db);
+    
+    // 2. Push local data to Supabase
+    const pushResult = await pushLocalToSupabase(db);
+    
+    Swal.close();
+    
+    if (pullResult.success && pushResult.success) {
+      Swal.fire({
+        icon: 'success',
+        title: 'Sinkronisasi Berhasil!',
+        text: 'Data Anda telah sepenuhnya sinkron dengan Supabase Cloud. Seluruh rekapan dan database diperbarui.',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } else {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sinkronisasi Selesai Sebagian',
+        html: `Pull: ${pullResult.message}<br>Push: ${pushResult.message}`,
+        confirmButtonColor: '#ff9f43'
+      });
+    }
+  } catch (err: any) {
+    Swal.close();
+    Swal.fire({
+      icon: 'error',
+      title: 'Sinkronisasi Gagal',
+      text: err.message || 'Gagal menyinkronkan data dengan Supabase.',
+      confirmButtonColor: '#696cff'
+    });
+  } finally {
+    isSyncing.value = false;
+  }
+};
 
 const currentUser = computed(() => {
   return db.session.currentUser;
@@ -471,6 +536,34 @@ const handleLogout = () => {
   }
   100% {
     box-shadow: 0 0 0 0 rgba(113, 221, 55, 0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.spin-animation {
+  animation: spin 1s linear infinite;
+  display: inline-block;
+}
+.syncing-pulse {
+  background-color: var(--warning) !important;
+  animation: pulse-animation-warning 1s infinite !important;
+}
+@keyframes pulse-animation-warning {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 171, 0, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(255, 171, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 171, 0, 0);
   }
 }
 

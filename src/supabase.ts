@@ -61,6 +61,15 @@ export function getSupabaseClient(): SupabaseClient | null {
 export const SUPABASE_SQL_SCHEMA = `-- SIMPAS DATABASE SCHEMA (Pancasila Salatiga)
 -- Salin dan jalankan script ini di SQL Editor Supabase Anda.
 
+-- ==========================================
+-- JIKA ANDA SUDAH MEMPUNYAI DATABASE SEBELUMNYA (EXISTING),
+-- JALANKAN PERINTAH ALTER BERIKUT DI SQL EDITOR SUPABASE:
+-- 
+-- ALTER TABLE public.students ADD COLUMN IF NOT EXISTS nis TEXT;
+-- ALTER TABLE public.students ADD COLUMN IF NOT EXISTS alamat TEXT;
+-- ALTER TABLE public.students ADD COLUMN IF NOT EXISTS hp_ortu TEXT;
+-- ==========================================
+
 -- 1. Tabel Profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
     id TEXT PRIMARY KEY,
@@ -100,6 +109,9 @@ CREATE TABLE IF NOT EXISTS public.students (
     tempat_lahir TEXT,
     tanggal_lahir TEXT,
     kelas_id TEXT REFERENCES public.classes(id) ON DELETE SET NULL,
+    nis TEXT,
+    alamat TEXT,
+    hp_ortu TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -288,7 +300,10 @@ export async function pushLocalToSupabase(dbInstance: any): Promise<{ success: b
         gender: s.gender || null,
         tempat_lahir: s.tempat_lahir || null,
         tanggal_lahir: s.tanggal_lahir || null,
-        kelas_id: s.kelas_id || null
+        kelas_id: s.kelas_id || null,
+        nis: s.nis || null,
+        alamat: s.alamat || null,
+        hp_ortu: s.hp_ortu || null
       }));
       const { error } = await client.from('students').upsert(formattedStudents);
       if (error) throw new Error(`Students Sync Failed: ${error.message}`);
@@ -391,107 +406,89 @@ export async function pullSupabaseToLocal(dbInstance: any): Promise<{ success: b
     // 1. Profiles
     const { data: profilesData, error: errProf } = await client.from('profiles').select('*');
     if (errProf) throw new Error(`Gagal memuat profiles: ${errProf.message}`);
-    if (profilesData && profilesData.length > 0) {
-      dbInstance.profiles = profilesData;
-      results.profiles = profilesData.length;
-    }
+    dbInstance.profiles = profilesData || [];
+    results.profiles = dbInstance.profiles.length;
 
     // 2. Subjects
     const { data: subjectsData, error: errSub } = await client.from('subjects').select('*');
     if (errSub) throw new Error(`Gagal memuat subjects: ${errSub.message}`);
-    if (subjectsData && subjectsData.length > 0) {
-      dbInstance.subjects = subjectsData;
-      results.subjects = subjectsData.length;
-    }
+    dbInstance.subjects = subjectsData || [];
+    results.subjects = dbInstance.subjects.length;
 
     // 3. Classes
     const { data: classesData, error: errCls } = await client.from('classes').select('*');
     if (errCls) throw new Error(`Gagal memuat classes: ${errCls.message}`);
-    if (classesData && classesData.length > 0) {
-      dbInstance.classes = classesData.map((c: any) => ({
-        id: c.id,
-        nama: c.nama,
-        tahun_ajaran: c.tahun_ajaran,
-        wali_kelas_id: c.wali_kelas_id || ''
-      }));
-      results.classes = classesData.length;
-    }
+    dbInstance.classes = (classesData || []).map((c: any) => ({
+      id: c.id,
+      nama: c.nama,
+      tahun_ajaran: c.tahun_ajaran,
+      wali_kelas_id: c.wali_kelas_id || ''
+    }));
+    results.classes = dbInstance.classes.length;
 
     // 4. Students
     const { data: studentsData, error: errStd } = await client.from('students').select('*');
     if (errStd) throw new Error(`Gagal memuat students: ${errStd.message}`);
-    if (studentsData && studentsData.length > 0) {
-      dbInstance.students = studentsData.map((s: any, idx: number) => {
-        const localStudent = dbInstance.students.find((ls: any) => ls.id === s.id);
-        return {
-          id: s.id,
-          nama: s.nama,
-          gender: s.gender || 'Laki-laki',
-          tempat_lahir: s.tempat_lahir || 'Salatiga',
-          tanggal_lahir: s.tanggal_lahir || '2010-01-01',
-          kelas_id: s.kelas_id || '',
-          nis: s.nis || (localStudent && localStudent.nis) || String(1000 + idx + 1),
-          alamat: s.alamat || (localStudent && localStudent.alamat) || 'Alamat santri terdaftar',
-          hp_ortu: s.hp_ortu || (localStudent && localStudent.hp_ortu) || '081234567890'
-        };
-      });
-      results.students = studentsData.length;
-    }
+    dbInstance.students = (studentsData || []).map((s: any, idx: number) => {
+      const localStudent = dbInstance.students.find((ls: any) => ls.id === s.id);
+      return {
+        id: s.id,
+        nama: s.nama,
+        gender: s.gender || 'Laki-laki',
+        tempat_lahir: s.tempat_lahir || 'Salatiga',
+        tanggal_lahir: s.tanggal_lahir || '2010-01-01',
+        kelas_id: s.kelas_id || '',
+        nis: s.nis || (localStudent && localStudent.nis) || String(1000 + idx + 1),
+        alamat: s.alamat || (localStudent && localStudent.alamat) || 'Alamat santri terdaftar',
+        hp_ortu: s.hp_ortu || (localStudent && localStudent.hp_ortu) || '081234567890'
+      };
+    });
+    results.students = dbInstance.students.length;
 
     // 5. Grades
     const { data: gradesData, error: errGrd } = await client.from('grades').select('*');
     if (errGrd) throw new Error(`Gagal memuat grades: ${errGrd.message}`);
-    if (gradesData && gradesData.length > 0) {
-      dbInstance.grades = gradesData;
-      results.grades = gradesData.length;
-    }
+    dbInstance.grades = gradesData || [];
+    results.grades = dbInstance.grades.length;
 
     // 6. Attendance
     const { data: attendanceData, error: errAtt } = await client.from('attendance').select('*');
     if (errAtt) throw new Error(`Gagal memuat attendance: ${errAtt.message}`);
-    if (attendanceData && attendanceData.length > 0) {
-      dbInstance.attendance = attendanceData;
-      results.attendance = attendanceData.length;
-    }
+    dbInstance.attendance = attendanceData || [];
+    results.attendance = dbInstance.attendance.length;
 
     // 7. Syllabus Targets
     const { data: targetsData, error: errSyl } = await client.from('syllabus_targets').select('*');
     if (errSyl) throw new Error(`Gagal memuat syllabus_targets: ${errSyl.message}`);
-    if (targetsData && targetsData.length > 0) {
-      dbInstance.syllabusTargets = targetsData.map((t: any) => ({
-        id: t.id,
-        subject_id: t.subject_id,
-        class_id: t.class_id,
-        target_materi: t.target_materi,
-        ustadz_id: t.ustadz_id
-      }));
-      results.syllabus_targets = targetsData.length;
-    }
+    dbInstance.syllabusTargets = (targetsData || []).map((t: any) => ({
+      id: t.id,
+      subject_id: t.subject_id,
+      class_id: t.class_id,
+      target_materi: t.target_materi,
+      ustadz_id: t.ustadz_id
+    }));
+    results.syllabus_targets = dbInstance.syllabusTargets.length;
 
     // 8. Teaching Journals
     const { data: journalsData, error: errJr } = await client.from('teaching_journals').select('*');
     if (errJr) throw new Error(`Gagal memuat teaching_journals: ${errJr.message}`);
-    if (journalsData && journalsData.length > 0) {
-      dbInstance.teachingJournals = journalsData.map((j: any) => ({
-        id: j.id,
-        date: j.date,
-        ustadz_id: j.ustadz_id,
-        subject_id: j.subject_id,
-        class_id: j.class_id,
-        materi_diajarkan: j.materi_diajarkan,
-        kehadiran_summary: j.kehadiran_summary,
-        notes: j.notes
-      }));
-      results.teaching_journals = journalsData.length;
-    }
+    dbInstance.teachingJournals = (journalsData || []).map((j: any) => ({
+      id: j.id,
+      date: j.date,
+      ustadz_id: j.ustadz_id,
+      subject_id: j.subject_id,
+      class_id: j.class_id,
+      materi_diajarkan: j.materi_diajarkan,
+      kehadiran_summary: j.kehadiran_summary,
+      notes: j.notes
+    }));
+    results.teaching_journals = dbInstance.teachingJournals.length;
 
     // 9. Nadhoman Setorans
     const { data: setoranData, error: errNd } = await client.from('nadhoman_setorans').select('*');
     if (errNd) throw new Error(`Gagal memuat nadhoman_setorans: ${errNd.message}`);
-    if (setoranData && setoranData.length > 0) {
-      dbInstance.nadhomanSetorans = setoranData;
-      results.nadhoman_setorans = setoranData.length;
-    }
+    dbInstance.nadhomanSetorans = setoranData || [];
+    results.nadhoman_setorans = dbInstance.nadhomanSetorans.length;
 
     // Persist pulled data to LocalStorage
     dbInstance.saveAll();

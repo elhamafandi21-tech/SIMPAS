@@ -15,19 +15,17 @@ onMounted(async () => {
 
   // Background silent sync pull if Supabase is configured
   const triggerPull = async () => {
-    const url = localStorage.getItem('simpas_supabase_url');
-    const anonKey = localStorage.getItem('simpas_supabase_anon_key');
-    // Default autoSync to true if URL is configured but not specifically turned off
-    const autoSync = localStorage.getItem('simpas_supabase_autosync') !== 'false';
-    
-    if (url && anonKey && autoSync) {
-      try {
-        const { pullSupabaseToLocal } = await import('./supabase');
+    try {
+      const { getSupabaseConfig, pullSupabaseToLocal } = await import('./supabase');
+      const config = getSupabaseConfig();
+      const autoSync = localStorage.getItem('simpas_supabase_autosync') !== 'false';
+      
+      if (config.url && config.anonKey && autoSync) {
         await pullSupabaseToLocal(db);
         console.log('Background silent pull completed successfully.');
-      } catch (e) {
-        console.warn('Background silent pull failed:', e);
       }
+    } catch (e) {
+      console.warn('Background silent pull failed:', e);
     }
   };
 
