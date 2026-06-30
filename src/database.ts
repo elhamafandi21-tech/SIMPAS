@@ -209,6 +209,24 @@ export class SimpasDatabase {
     this.subjects = loadFromLocalStorage<Subject[]>('subjects', initialSubjects);
     this.classes = loadFromLocalStorage<ClassRoom[]>('classes', initialClasses);
     this.students = loadFromLocalStorage<Student[]>('students', initialStudents);
+    
+    // Ensure all students have a valid 'nis', 'alamat', and 'hp_ortu' string property so they don't crash components
+    let studentsUpdated = false;
+    this.students.forEach((s, idx) => {
+      if (s.nis === undefined || s.nis === null) {
+        s.nis = String(1000 + idx + 1);
+        studentsUpdated = true;
+      }
+      if (s.alamat === undefined || s.alamat === null) {
+        s.alamat = 'Alamat santri terdaftar';
+        studentsUpdated = true;
+      }
+      if (s.hp_ortu === undefined || s.hp_ortu === null) {
+        s.hp_ortu = '081234567890';
+        studentsUpdated = true;
+      }
+    });
+
     this.grades = loadFromLocalStorage<Grade[]>('grades', initialGrades);
     this.attendance = loadFromLocalStorage<Attendance[]>('attendance', initialAttendance);
     this.syllabusTargets = loadFromLocalStorage<SyllabusTarget[]>('syllabus_targets', initialSyllabusTargets);
@@ -218,7 +236,7 @@ export class SimpasDatabase {
     // Auth Session setup
     this.session = loadFromLocalStorage<AuthSession>('session', { currentUser: null, rememberMe: false });
 
-    if (updatedProfiles) {
+    if (updatedProfiles || studentsUpdated) {
       this.saveAll();
     }
   }

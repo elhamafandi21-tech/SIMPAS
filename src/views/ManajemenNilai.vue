@@ -225,12 +225,14 @@ const studentsList = computed(() => {
   if (!selectedClass.value) return [];
   const list = db.students.filter(s => s.kelas_id === selectedClass.value);
   return list.sort((a, b) => {
-    const numA = parseInt(a.nis.replace(/[^0-9]/g, ''), 10);
-    const numB = parseInt(b.nis.replace(/[^0-9]/g, ''), 10);
+    const nisA = String(a.nis || '');
+    const nisB = String(b.nis || '');
+    const numA = parseInt(nisA.replace(/[^0-9]/g, ''), 10);
+    const numB = parseInt(nisB.replace(/[^0-9]/g, ''), 10);
     if (!isNaN(numA) && !isNaN(numB)) {
       return numA - numB;
     }
-    return a.nis.localeCompare(b.nis, undefined, { numeric: true, sensitivity: 'base' });
+    return nisA.localeCompare(nisB, undefined, { numeric: true, sensitivity: 'base' });
   });
 });
 

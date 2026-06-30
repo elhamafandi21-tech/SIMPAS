@@ -476,8 +476,8 @@ const filteredStudents = computed(() => {
     // Search query filter
     if (searchQuery.value) {
       const q = searchQuery.value.toLowerCase();
-      const matchName = std.nama.toLowerCase().includes(q);
-      const matchNis = std.nis.toLowerCase().includes(q);
+      const matchName = (std.nama || '').toLowerCase().includes(q);
+      const matchNis = (std.nis || '').toLowerCase().includes(q);
       if (!matchName && !matchNis) return false;
     }
     // Class filter
@@ -488,12 +488,14 @@ const filteredStudents = computed(() => {
   });
 
   return list.sort((a, b) => {
-    const numA = parseInt(a.nis.replace(/[^0-9]/g, ''), 10);
-    const numB = parseInt(b.nis.replace(/[^0-9]/g, ''), 10);
+    const nisA = String(a.nis || '');
+    const nisB = String(b.nis || '');
+    const numA = parseInt(nisA.replace(/[^0-9]/g, ''), 10);
+    const numB = parseInt(nisB.replace(/[^0-9]/g, ''), 10);
     if (!isNaN(numA) && !isNaN(numB)) {
       return numA - numB;
     }
-    return a.nis.localeCompare(b.nis, undefined, { numeric: true, sensitivity: 'base' });
+    return nisA.localeCompare(nisB, undefined, { numeric: true, sensitivity: 'base' });
   });
 });
 
@@ -629,7 +631,7 @@ const openBulkModal = () => {
   // Find highest NIS currently
   let maxNis = 25000;
   if (db.students.length > 0) {
-    const numbers = db.students.map(s => parseInt(s.nis)).filter(n => !isNaN(n));
+    const numbers = db.students.map(s => parseInt(s.nis || '')).filter(n => !isNaN(n));
     if (numbers.length > 0) {
       maxNis = Math.max(...numbers);
     }

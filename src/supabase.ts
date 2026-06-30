@@ -421,7 +421,20 @@ export async function pullSupabaseToLocal(dbInstance: any): Promise<{ success: b
     const { data: studentsData, error: errStd } = await client.from('students').select('*');
     if (errStd) throw new Error(`Gagal memuat students: ${errStd.message}`);
     if (studentsData && studentsData.length > 0) {
-      dbInstance.students = studentsData;
+      dbInstance.students = studentsData.map((s: any, idx: number) => {
+        const localStudent = dbInstance.students.find((ls: any) => ls.id === s.id);
+        return {
+          id: s.id,
+          nama: s.nama,
+          gender: s.gender || 'Laki-laki',
+          tempat_lahir: s.tempat_lahir || 'Salatiga',
+          tanggal_lahir: s.tanggal_lahir || '2010-01-01',
+          kelas_id: s.kelas_id || '',
+          nis: s.nis || (localStudent && localStudent.nis) || String(1000 + idx + 1),
+          alamat: s.alamat || (localStudent && localStudent.alamat) || 'Alamat santri terdaftar',
+          hp_ortu: s.hp_ortu || (localStudent && localStudent.hp_ortu) || '081234567890'
+        };
+      });
       results.students = studentsData.length;
     }
 

@@ -556,7 +556,7 @@ const bulkStudentForm = ref({
 const openAddStudentModal = () => {
   let maxNis = 25000;
   if (db.students.length > 0) {
-    const numbers = db.students.map(s => parseInt(s.nis)).filter(n => !isNaN(n));
+    const numbers = db.students.map(s => parseInt(s.nis || '')).filter(n => !isNaN(n));
     if (numbers.length > 0) {
       maxNis = Math.max(...numbers);
     }
@@ -592,7 +592,7 @@ const openAddClassModal = () => {
 const openBulkStudentModal = () => {
   let maxNis = 25000;
   if (db.students.length > 0) {
-    const numbers = db.students.map(s => parseInt(s.nis)).filter(n => !isNaN(n));
+    const numbers = db.students.map(s => parseInt(s.nis || '')).filter(n => !isNaN(n));
     if (numbers.length > 0) {
       maxNis = Math.max(...numbers);
     }
